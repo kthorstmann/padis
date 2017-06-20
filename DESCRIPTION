@@ -1,10 +1,18 @@
 Package: padis
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Functions For The Analysis Of Wake-Forest Data 
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Kai Horstmann
+Maintainer: Kai Horstmann <horstmak@hu-berlin.de>
+Description: This package provides functions for the analysis of multilevel data; some of these functions may be used for any type of data, however, most of them are tailored to a specific task that needs to be completed in the workgroup of Lara Kammrath, WFU, USA.
+License: CC-BY 4.0
 LazyData: TRUE
 RoxygenNote: 5.0.1
+Imports:
+  tidyr,
+  data.table,
+  stringr,
+  xlsx,
+  psych,
+  purrr
+  

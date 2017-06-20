@@ -222,7 +222,136 @@ write_to_wd <- function(data, folder = NULL, type = "xlsx", name = NULL, overwri
 }
 
 
+#' Turns factors to character strings in a data frame
+#'
+#' @param data The data frame that should be converted
+#'
+#' @return A data frame in which all factors are converted to character strings.
+#' @export
+#'
+#' @examples
+#' data <- data.frame(a = c(1, 2, 3), b = as.factor(c(a, b, c)))
+#' fac_to_chr(data)
+fac_to_chr <- function(data){
+  i <- sapply(data, is.factor)
+  data[i] <- lapply(data[i], as.character)
+  if (any(i)) {
+    msg_part <- paste0("- ", names(i[i]), sep = "\n")
+    message("The following variables were converted from factor to string\n", msg_part)
+    return(data)
+  }
+  return(data)
+}
 
+
+#' Compute summary statistics within groups in a nested data frame
+#'
+#' This function allows the computation of some summary statistics within groups/persons or other clusters. The data needs to be in a long format. At least one variable needs to be a grouping-variable, e.g. \code{id}. Other variables of the data frame should be numeric.
+#'
+#' @param data The data frame in long-format that contains the variables to be analysed
+#' @param id Character string. The id or grouping variable, in which other observations are nested
+#' @param remove_var Character string. Variables that should be removed before the computation proceeds (otherwise, the function assumes that all other variables should be used for the computation)
+#' @param intake_var Character string. Specific variables (e.g. names of these variables) for which the ananylses should be run, i. e. if only a subset of variables should be used.
+#' @param out_values The values to be returned. Can be either
+#' \describe{
+#'   \item{\code{"mean"}}{Computes the mean within each group/id. Missing values are removed before computation.}
+#'   \item{\code{"sd"}}{Computes the sd each group/id. Missing values are removed before computation.}
+#'   \item{\code{"count"}}{Computes the number of cases within each group/id, including missings.}
+#'   \item{\code{"sum"}}{Computes the sum of values within each group/id. Missing values are removed before computation.}
+#'   \item{\code{"missing"}}{Counts the number of missing values in each group/id.}
+#'   \item{\code{"cor"}}{Computes the within-correlation for each variable within each group/id. Pearson correlation (\code{\link{cor}}) with \code{"pairwise.complete.obs"} is used.}
+#' }
+#'
+#' @return Returns a data frame in wide format (i. e. one row per group/id). Variable names are the original variable names with a correspondng prefix and an underscore (e. g. \code{mean_} for the mean). For the correlations, the names of the two variables that are correlated with each other are pasted together and the prefix \code{cor} is added, e. g. \code{cor.var_1.var_2} for the correlation between \code{var_1} and \code{var_2}.
+#' @export
+#'
+#' @examples
+#' df <- aggregate_df(wide_example_data, id="id")
+#' head(df)
+aggregate_df <- function(data, id, remove_var = NULL,
+                         intake_var = NULL,
+                         out_values = c("mean", "sd", "count", "sum", "missing", "cor")){
+  data <- padis::fac_to_chr(data)
+
+  stopifnot(is.character(id))
+  stopifnot(is.character(intake_var) || is.null(intake_var))
+  stopifnot(is.data.frame(data))
+
+
+  if (is.null(intake_var)) {
+    compute_var <- setdiff(names(data), c(id, remove_var))
+  } else {
+    compute_var <- intake_var
+  }
+
+  ## check that there are only numerics in the data frame
+  i <- sapply(data[compute_var], is.numeric)
+  if (any(!i)) {
+    to_remove <- paste0("- ", names(i[!i]), collapse = "\n")
+    message("Some non-id variables were not numeric and where therefore removed before the computation could proceed: \n", to_remove)
+    compute_var <- names(i[i])
+  }
+
+  if (length(compute_var) == 1 && "cor" %in% out_values) {
+    out_values[out_values == "cor"] <- NA
+    out_values <- c(na.omit(out_values))
+    message("Since only one numeric variable was used, no correlation can be computed")
+  }
+
+
+  ## if prefixes have to be changed, then change them here
+  unique_id <- unique(data[,id])
+  group <- data.frame(unique_id, stringsAsFactors = FALSE)
+  names(group) <- id
+
+  if ("mean" %in% out_values) {
+    within_mean <- aggregate(data[, compute_var], list(data[,id]), function(x) mean(x, na.rm = TRUE))[-1]
+    names(within_mean) <- paste0("mean_", names(within_mean))
+    df <- cbind(group, within_mean)
+  }
+  if ("sd" %in% out_values) {
+    within_sd <- aggregate(data[, compute_var], list(data[,id]), function(x) sd(x, na.rm = TRUE))[-1]
+    names(within_sd) <- paste0("sd_", names(within_sd))
+    df <- cbind(df, within_sd)
+  }
+  if ("sum" %in% out_values) {
+    within_sum <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(x, na.rm = TRUE))[-1]
+    names(within_sum) <- paste0("sum_", names(within_sum))
+    df <- cbind(df, within_sum)
+  }
+  if ("count" %in% out_values) {
+    within_n <- aggregate(data[, compute_var], list(data[,id]), function(x) NROW(x))[-1]
+    names(within_n) <- paste0("n_", names(within_n))
+    df <- cbind(df, within_n)
+  }
+  if ("missing" %in% out_values) {
+    within_na <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(is.na(x)))[-1]
+    names(within_na) <- paste0("missings_", names(within_na))
+    df <- cbind(df, within_na)
+  }
+
+  # correlations
+  if ("cor" %in% out_values) {
+    get_cor <- function(i_id, data, compute_var, id_column){
+      id_data <- data[data[,id_column] == i_id,]
+      m <- base::cor(id_data[compute_var], use = "pairwise.complete.obs") ### arguments passed on to cor
+      # taken from
+      # https://stackoverflow.com/questions/12116207/flatten-matrix-in-r-to-four-columns-indexes-and-upper-lower-triangles
+      ut <- upper.tri(m)
+      cor_df <- data.frame(i = rownames(m)[row(m)[ut]],
+                           j = rownames(m)[col(m)[ut]],
+                           cor = t(m)[ut]) ## could add p-values here
+      names <- paste("cor", cor_df[,"i"], cor_df[,"j"], sep = ".")
+      cors <- cor_df[,"cor"]
+      names(cors) <- names
+      cors
+    }
+    id_correlations <- purrr::map(unique_id, ~ get_cor(i_id = ., data = data, compute_var = compute_var, id_column=id))
+    within_cor <- data.frame(do.call("rbind", id_correlations))
+    df <- cbind(df, within_cor)
+  }
+  return(df)
+}
 
 
 
