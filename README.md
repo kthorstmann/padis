@@ -1,0 +1,14 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+Padis-package
+-------------
+
+**padis** is a package developed for [Lara Kammrath](http://college.wfu.edu/psychology/about-the-department/faculty-and-staff/lara-kammrath/) at Wake Forest University.
+
+To install this package, run the following code lines:
+
+``` r
+install.packages("devtools")
+devtools::install_github("kthorstmann/padis")
+library(padis)
+```
