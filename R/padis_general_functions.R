@@ -334,7 +334,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
   if ("cor" %in% out_values) {
     get_cor <- function(i_id, data, compute_var, id_column){
       id_data <- data[data[,id_column] == i_id,]
-      m <- base::cor(id_data[compute_var], use = "pairwise.complete.obs") ### arguments passed on to cor
+      m <- stats::cor(id_data[compute_var], use = "pairwise.complete.obs") ### arguments passed on to cor
       # taken from
       # https://stackoverflow.com/questions/12116207/flatten-matrix-in-r-to-four-columns-indexes-and-upper-lower-triangles
       ut <- upper.tri(m)
