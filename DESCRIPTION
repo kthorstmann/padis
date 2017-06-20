@@ -15,4 +15,6 @@ Imports:
   xlsx,
   psych,
   purrr
-  
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

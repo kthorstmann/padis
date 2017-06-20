@@ -1,0 +1,125 @@
+---
+title: "PADIS vignette"
+author: "Kai T. Horstmann"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+This package was written for Lara Kammrath from Wake Forest University and her research. It contains some general functions that may apply to multiple, more general problems (section 1) and some very specific functions (section 2) that are tailored to Lara's specific tasks.
+
+It relies on several different packages, which are installed automatically once this package is installed
+
+- tidyr
+- data.table
+- stringr
+- xlsx
+- purrr
+- psych
+
+
+## How to install this package:
+
+You can run the following code to install this package from GitHub:
+
+
+```{r install paids, eval = FALSE, echo = TRUE}
+
+
+install.packages("devtools")
+devtools::install_github("kthorstmann/padis")
+library(padis)
+
+
+```
+
+
+# Section 1 - General functions
+
+### Example data frame
+
+Th package contains a fake example data frame, `wide_example_data`, which is used to illustrate the functions.
+
+```{r}
+
+library(padis)
+data <- wide_example_data
+head(data)
+
+```
+
+## Data selection and transformation
+
+### select_vars
+
+This function can be used to select specific variables from a data set. It is primarily build on `grep` or `dplyr::select`.
+
+```{r select_vars}
+
+subset <- select_vars(data, id = "id", prefix="var_s")
+head(subset, 3)
+
+subset <- select_vars(data, id = c("id", "id2"), prefix="var_.+3$")
+head(subset, 3)
+
+```
+
+To get more information on the use of regular expressions, see `?base::regex`.
+
+### gather_one
+
+```{r gather}
+
+gather_df <- gather_one(data=data, key_vars="id", varying = c("var_p_1", "var_p_2"), new_name="var")
+head(gather_df)
+
+```
+
+### swap_char
+
+This function is used to change variable names since the `gather` function (see below, based on `tidyr::gather`) relies on a specific strucutre of item names. It is primarily used in some functions specific to the problem at hand (section 2).
+
+```{r swap_char}
+
+swap_char("this.string", ".", "_")
+
+```
+
+
+### gather_multiple
+
+Similar to `gather_one`, `gather_multiple` turns several variables from a wide data frame into a long data frame. Several `key_vars` can be added, however, the new names of the resulting variables should be changed manually. The varying object should be set to NULL, and pererably all variables that should not be turned into th long format should be removed before applying this function.
+
+
+```{r gather_multiple}
+
+gather_mtpl_df <- gather_multiple(data=data, key_vars=c("id", "id2"), varying = NULL)
+head(gather_mtpl_df)
+
+```
+
+### aggregate_df
+
+```{r aggregate_df}
+
+library(padis)
+df <- aggregate_df(wide_example_data, id="id")
+head(df)
+
+```
+
+
+## Saving data
+
+```{r write_to_wd, message=FALSE, error=FALSE, eval = FALSE, echo = TRUE}
+
+# If the function is called for the first time and the file does not exist
+write_to_wd(data, folder = NULL, type = "xlsx", name="example_data_wfu", overwrite=FALSE)
+
+
+```
