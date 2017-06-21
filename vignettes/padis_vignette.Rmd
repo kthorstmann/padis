@@ -149,7 +149,7 @@ It does not matter if you write `var_stem="PSP1.variable"` or `var_stem="PSP1.va
 
 This function looks for two items that have the same stem, but different end-strings. It then matches these two variables in the following way:
 
-The first variable with the *.r* at the end, e.g. *PSP1.variable.r*, and the second variable with *.i* at the end, e.g. *PSP1.variable.i*, are scanned and the function identifyies which one has a number in it, and if either, put that number in the first new variable, e.g. *PSP1.variable*. A separate 0/1 variable, e.g. *PSP.real.imagined*, would indicate where the numbers in the set of variables came from. 
+The first variable with the *.r* at the end, e.g. *PSP1.variable.r*, and the second variable with *.i* at the end, e.g. *PSP1.variable.i*, are scanned and the function identifies which one has a number in it, and if either, put that number in the first new variable, e.g. *PSP1.variable*. A separate 0/1 variable, e.g. *PSP.real.imagined*, would indicate where the numbers in the set of variables came from. 
 
 
 ```{r imaginer}
