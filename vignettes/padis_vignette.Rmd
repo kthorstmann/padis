@@ -129,75 +129,36 @@ write_to_wd(data, folder = NULL, type = "xlsx", name="example_data_wfu", overwri
 
 Section 2 contains the functions that are specifically built for the tasks at Wake Forest Unviersity and Lara Kammrath's workgroup. They may not be applicable to a broader set of problems. However, they all rely on the functions above.
 
-```{r, eval = FALSE}
+### match_ir
+
+This function searches for two items that have the same stem but end on two different end-strings, e.g. .r and .i:
+
+```{r match_ir}
 
 
-data_dy <- xlsx::read.xlsx("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data/Raw Diary Sample.xlsx", 1)
-data_in <- xlsx::read.xlsx("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data/Raw Intake Sample.xlsx", 1)
-
-## transform data sets
-
-# 1) In intake raw data, leave all variables that start with PAR.variable in the new participant-level dataset. Make sure PAR.ID is there as the ID variable.
-
-## 1. participant data set:
-par_data <- select_vars(data_in, ids = c("PAR.ID"), prefix = "^PAR")
-head(par_data)
-
-# 2) In intake raw data, move all variables that start with PSP.variable into the new PSP-level dataset. These should be stacked so that there is only one PSP per line (typically 1-16 per participant). Make sure that PAR.ID, PSP.ID, and PSP.Unique ID are included as the ID variables. (PSP.ID is ordinal within participant, PSP.UniqueID is unique across the dataset).
-
-## 2. PSP level data set:
-psp_data <- select_vars(data_in, ids = c("PAR.ID"), prefix = "^PSP")
-psp_long <- gather_multiple(psp_data, key_vars=c("PAR.ID"), search="PSP\\d+\\.")
-
-# 3) In daily diary raw data, leave all variables that start with DAY.variable in the new Day-leveld dataset. These should be stacked so that there is only one day per line (typically 2-14 per participant). ID variables should include PAR.ID, Day.Num, Day.UniqueID, Day.DaysIn. (Day.Num is ordinal within participant, Day.UniqueID is unique across the dataset, and Days.DaysIn is the linear num days since they started the study).
-
-## 3. DAY level (they are already correctly aggregated)
-day_data <- select_vars(data_dy, ids = c("PAR.ID"), prefix = "^Day")
-## this is already stacked correctly
-
-# 4) In the daily diary raw data, move all variables that start with Issue.variable in the new Issue-level dataset. They should be stacked with one issue per line (typically 1-2 issues per participant). ID variables should include PAR.ID, Day.Num, Day.UniqueID, Day.DaysIn, Issue.Num, Issue.UniqueID.
-
-## 4. Issue level
-issue_data <- select_vars(data_dy, ids = c("PAR.ID", "Day.Num", "Day.UniqueID", "Day.DaysIn"), prefix = "Issue")
-issue_data <- dplyr::select(issue_data, -Issue2.Support.Emo) ## remove Issue.Emo here, because it is not correct currently
-issue_long <- gather_multiple(issue_data, key_vars=c("PAR.ID", "Day.Num", "Day.UniqueID", "Day.DaysIn"), search="Issue\\d+.")
-# this is correct, but need to change the names here possibly
-
-# 5) In the daily diary raw data, move all variables that start with Sought.variable in the new Selection-level dataset. They should be stacked with one selection decision (0/1) per line (typically 15-16 decisions per participant per issue). ID variables should include PAR.ID, Day.Num, Day.UniqueID, Day.DaysIn, Issue.Num, Issue.UniqueID, PSP.num, and PSP.UniqueID. 
-
-## 5. sought level data
-
-## here is an error, the problem is that I am not sure how this data frame should look like
-
-sought_data <- select_vars(data_dy, ids = c("PAR.ID", "Day.Num", "Day.UniqueID", "Day.DaysIn", "Issue.Num", "Issue.UniqueID"),
-                           prefix = "Sought\\.")
-
-sought_long <- gather_multiple(sought_data, key_vars=c("PAR.ID", "Day.Num", "Day.UniqueID"), search = "PSP\\d+\\.")
-
-## make list with data frames
-names_df_long <- c("PAR_data", "PSP_data", "DAY_data", "ISSUE_data", "SOUGHT_data")
-long_df_list <- list(par_data, psp_long, day_data, issue_long, sought_long)
-
-# write_to <- "workspace"
-if (write_to == "workspace") {
-  # this does not work with map, because of the deparse stuff. have to do this with paste
-  purrr::map(long_df_list, ~ write_to_ws(., overwrite = FALSE))
-}
-
-if (write_to == "xlsx" || write_to == "csv") {
-  # this does not work with map, because of the deparse stuff. have to do this with paste
-  write_to_wd()
-}
-
-
-
+library(padis)
+data <- imaginer_example_data
+head(data)
+match_ir(data, var_stem="PSP1.variable")
 
 ```
 
+It does not matter if you write `var_stem="PSP1.variable"` or `var_stem="PSP1.variable."` (the difference being the dot at the end), the function works either way. Further, the default for the end-pattern is `".r"` and `".i"`.
+
+### imaginer
+
+This function looks for tow items that have the same stem, but different end-strings. It then matches these two variables in the following way:
+
+The first variable with the *.r* at the end, e.g. *PSP1.variable.r*, and the second variable with *.i* at the end, e.g. *PSP1.variable.i*, are scanned and the function identifyies which one has a number in it, and if either, put that number in the first new variable, e.g. *PSP1.variable*. A separate 0/1 variable, e.g. *PSP.real.imagined*, would indicate where the numbers in the set of variables came from. 
 
 
+```{r imaginer}
 
+data <- imaginer_example_data
+return_df <- imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE)
+head(return_df, 10)
 
+```
 
 
 

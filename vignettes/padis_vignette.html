@@ -255,62 +255,53 @@ df &lt;-<span class="st"> </span><span class="kw">aggregate_df</span>(wide_examp
 <div id="section-2---specific-padis-functions" class="section level1">
 <h1>Section 2 - specific padis functions</h1>
 <p>Section 2 contains the functions that are specifically built for the tasks at Wake Forest Unviersity and Lara Kammrath’s workgroup. They may not be applicable to a broader set of problems. However, they all rely on the functions above.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_dy &lt;-<span class="st"> </span>xlsx::<span class="kw">read.xlsx</span>(<span class="st">&quot;/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data/Raw Diary Sample.xlsx&quot;</span>, <span class="dv">1</span>)
-data_in &lt;-<span class="st"> </span>xlsx::<span class="kw">read.xlsx</span>(<span class="st">&quot;/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data/Raw Intake Sample.xlsx&quot;</span>, <span class="dv">1</span>)
-
-## transform data sets
-
-<span class="co"># 1) In intake raw data, leave all variables that start with PAR.variable in the new participant-level dataset. Make sure PAR.ID is there as the ID variable.</span>
-
-## 1. participant data set:
-par_data &lt;-<span class="st"> </span><span class="kw">select_vars</span>(data_in, <span class="dt">ids =</span> <span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>), <span class="dt">prefix =</span> <span class="st">&quot;^PAR&quot;</span>)
-<span class="kw">head</span>(par_data)
-
-<span class="co"># 2) In intake raw data, move all variables that start with PSP.variable into the new PSP-level dataset. These should be stacked so that there is only one PSP per line (typically 1-16 per participant). Make sure that PAR.ID, PSP.ID, and PSP.Unique ID are included as the ID variables. (PSP.ID is ordinal within participant, PSP.UniqueID is unique across the dataset).</span>
-
-## 2. PSP level data set:
-psp_data &lt;-<span class="st"> </span><span class="kw">select_vars</span>(data_in, <span class="dt">ids =</span> <span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>), <span class="dt">prefix =</span> <span class="st">&quot;^PSP&quot;</span>)
-psp_long &lt;-<span class="st"> </span><span class="kw">gather_multiple</span>(psp_data, <span class="dt">key_vars=</span><span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>), <span class="dt">search=</span><span class="st">&quot;PSP</span><span class="ch">\\</span><span class="st">d+</span><span class="ch">\\</span><span class="st">.&quot;</span>)
-
-<span class="co"># 3) In daily diary raw data, leave all variables that start with DAY.variable in the new Day-leveld dataset. These should be stacked so that there is only one day per line (typically 2-14 per participant). ID variables should include PAR.ID, Day.Num, Day.UniqueID, Day.DaysIn. (Day.Num is ordinal within participant, Day.UniqueID is unique across the dataset, and Days.DaysIn is the linear num days since they started the study).</span>
-
-## 3. DAY level (they are already correctly aggregated)
-day_data &lt;-<span class="st"> </span><span class="kw">select_vars</span>(data_dy, <span class="dt">ids =</span> <span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>), <span class="dt">prefix =</span> <span class="st">&quot;^Day&quot;</span>)
-## this is already stacked correctly
-
-<span class="co"># 4) In the daily diary raw data, move all variables that start with Issue.variable in the new Issue-level dataset. They should be stacked with one issue per line (typically 1-2 issues per participant). ID variables should include PAR.ID, Day.Num, Day.UniqueID, Day.DaysIn, Issue.Num, Issue.UniqueID.</span>
-
-## 4. Issue level
-issue_data &lt;-<span class="st"> </span><span class="kw">select_vars</span>(data_dy, <span class="dt">ids =</span> <span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>, <span class="st">&quot;Day.Num&quot;</span>, <span class="st">&quot;Day.UniqueID&quot;</span>, <span class="st">&quot;Day.DaysIn&quot;</span>), <span class="dt">prefix =</span> <span class="st">&quot;Issue&quot;</span>)
-issue_data &lt;-<span class="st"> </span>dplyr::<span class="kw">select</span>(issue_data, -Issue2.Support.Emo) ## remove Issue.Emo here, because it is not correct currently
-issue_long &lt;-<span class="st"> </span><span class="kw">gather_multiple</span>(issue_data, <span class="dt">key_vars=</span><span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>, <span class="st">&quot;Day.Num&quot;</span>, <span class="st">&quot;Day.UniqueID&quot;</span>, <span class="st">&quot;Day.DaysIn&quot;</span>), <span class="dt">search=</span><span class="st">&quot;Issue</span><span class="ch">\\</span><span class="st">d+.&quot;</span>)
-<span class="co"># this is correct, but need to change the names here possibly</span>
-
-<span class="co"># 5) In the daily diary raw data, move all variables that start with Sought.variable in the new Selection-level dataset. They should be stacked with one selection decision (0/1) per line (typically 15-16 decisions per participant per issue). ID variables should include PAR.ID, Day.Num, Day.UniqueID, Day.DaysIn, Issue.Num, Issue.UniqueID, PSP.num, and PSP.UniqueID. </span>
-
-## 5. sought level data
-
-## here is an error, the problem is that I am not sure how this data frame should look like
-
-sought_data &lt;-<span class="st"> </span><span class="kw">select_vars</span>(data_dy, <span class="dt">ids =</span> <span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>, <span class="st">&quot;Day.Num&quot;</span>, <span class="st">&quot;Day.UniqueID&quot;</span>, <span class="st">&quot;Day.DaysIn&quot;</span>, <span class="st">&quot;Issue.Num&quot;</span>, <span class="st">&quot;Issue.UniqueID&quot;</span>),
-                           <span class="dt">prefix =</span> <span class="st">&quot;Sought</span><span class="ch">\\</span><span class="st">.&quot;</span>)
-
-sought_long &lt;-<span class="st"> </span><span class="kw">gather_multiple</span>(sought_data, <span class="dt">key_vars=</span><span class="kw">c</span>(<span class="st">&quot;PAR.ID&quot;</span>, <span class="st">&quot;Day.Num&quot;</span>, <span class="st">&quot;Day.UniqueID&quot;</span>), <span class="dt">search =</span> <span class="st">&quot;PSP</span><span class="ch">\\</span><span class="st">d+</span><span class="ch">\\</span><span class="st">.&quot;</span>)
-
-## make list with data frames
-names_df_long &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;PAR_data&quot;</span>, <span class="st">&quot;PSP_data&quot;</span>, <span class="st">&quot;DAY_data&quot;</span>, <span class="st">&quot;ISSUE_data&quot;</span>, <span class="st">&quot;SOUGHT_data&quot;</span>)
-long_df_list &lt;-<span class="st"> </span><span class="kw">list</span>(par_data, psp_long, day_data, issue_long, sought_long)
-
-<span class="co"># write_to &lt;- &quot;workspace&quot;</span>
-if (write_to ==<span class="st"> &quot;workspace&quot;</span>) {
-  <span class="co"># this does not work with map, because of the deparse stuff. have to do this with paste</span>
-  purrr::<span class="kw">map</span>(long_df_list, ~<span class="st"> </span><span class="kw">write_to_ws</span>(., <span class="dt">overwrite =</span> <span class="ot">FALSE</span>))
-}
-
-if (write_to ==<span class="st"> &quot;xlsx&quot;</span> ||<span class="st"> </span>write_to ==<span class="st"> &quot;csv&quot;</span>) {
-  <span class="co"># this does not work with map, because of the deparse stuff. have to do this with paste</span>
-  <span class="kw">write_to_wd</span>()
-}</code></pre></div>
+<div id="match_ir" class="section level3">
+<h3>match_ir</h3>
+<p>This function searches for two items that have the same stem but end on two different end-strings, e.g. .r and .i:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(padis)
+data &lt;-<span class="st"> </span>imaginer_example_data
+<span class="kw">head</span>(data)</code></pre></div>
+<pre><code>##   PSP1.variable.r PSP1.variable.i
+## 1              NA               6
+## 2              NA               1
+## 3               4              NA
+## 4               2              NA
+## 5              NA               1
+## 6              NA               6</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">match_ir</span>(data, <span class="dt">var_stem=</span><span class="st">&quot;PSP1.variable&quot;</span>)</code></pre></div>
+<pre><code>## [1] &quot;PSP1.variable.r&quot; &quot;PSP1.variable.i&quot;</code></pre>
+<p>It does not matter if you write <code>var_stem=&quot;PSP1.variable&quot;</code> or <code>var_stem=&quot;PSP1.variable.&quot;</code> (the difference being the dot at the end), the function works either way. Further, the default for the end-pattern is <code>&quot;.r&quot;</code> and <code>&quot;.i&quot;</code>.</p>
+</div>
+<div id="imaginer" class="section level3">
+<h3>imaginer</h3>
+<p>This function looks for tow items that have the same stem, but different end-strings. It then matches these two variables in the following way:</p>
+<p>The first variable with the <em>.r</em> at the end, e.g. <em>PSP1.variable.r</em>, and the second variable with <em>.i</em> at the end, e.g. <em>PSP1.variable.i</em>, are scanned and the function identifyies which one has a number in it, and if either, put that number in the first new variable, e.g. <em>PSP1.variable</em>. A separate 0/1 variable, e.g. <em>PSP.real.imagined</em>, would indicate where the numbers in the set of variables came from.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span>imaginer_example_data
+return_df &lt;-<span class="st"> </span><span class="kw">imaginer</span>(data, <span class="dt">var_stem=</span><span class="st">&quot;PSP1.variable.&quot;</span>, <span class="dt">return_complete_data=</span><span class="ot">TRUE</span>)
+<span class="kw">head</span>(return_df, <span class="dv">10</span>)</code></pre></div>
+<pre><code>##    PSP1.variable.r PSP1.variable.i PSP1.variable.real.imagined
+## 1               NA               6                           1
+## 2               NA               1                           1
+## 3                4              NA                           0
+## 4                2              NA                           0
+## 5               NA               1                           1
+## 6               NA               6                           1
+## 7                5              NA                           0
+## 8               NA               2                           1
+## 9               NA               2                           1
+## 10               1              NA                           0
+##    PSP1.variable
+## 1              6
+## 2              1
+## 3              4
+## 4              2
+## 5              1
+## 6              6
+## 7              5
+## 8              2
+## 9              2
+## 10             1</code></pre>
+</div>
 </div>
 
 
