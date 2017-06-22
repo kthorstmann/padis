@@ -50,7 +50,8 @@ match_ir <- function(data, var_stem, end_pattern = c(".r", ".i")){
 #' @param var_stem The stem of the item, i.e. the character stringr that both items share. Passed on to \code{\link[padis]{match_ir}}
 #' @param return_complete_data Logical, if \code{TRUE}, then the complete data frame is returned along with the two new values
 #' @param end_pattern The end pattern to search for. Default is \code{c(".r", ".i")}
-#' @param code_pattern The code pattern to be used. Default is \code{c(1, 0)}. This means that if a value originates from the .r-variable, it is documented with a 1, and if it originates from a .i-variable, it is documented with a 0. If both columns (.r and .i) contain a missing value for a person, this value will be coded as 999.
+#' @param code_pattern The code pattern to be used. Default is \code{c(1, 0)}. This means that if a value originates from the .r-variable, it is documented with a 1, and if it originates from a .i-variable, it is documented with a 0 in the indicator variable. If both columns (.r and .i) contain a missing value for a person, this value will be coded as 999.
+#' @param return_indiciator Logical. Should the indicator variable be returned as well? Default is to \code{TRUE}. If set to \code{FALSE}, only the final, merged variable is returned
 #'
 #' @return A data frame with either 2 colums or all original columns and two additional columns.
 #' @export
@@ -58,7 +59,13 @@ match_ir <- function(data, var_stem, end_pattern = c(".r", ".i")){
 #' @examples
 #' data <- imaginer_example_data
 #' imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE)
-imaginer <- function(data, var_stem, return_complete_data = FALSE, end_pattern = c(".r", ".i"), code_pattern = c(1, 0)){
+#'
+#' ## return without the indicator variable
+#' imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE,
+#' return_indicator = FALSE)
+imaginer <- function(data, var_stem, return_complete_data = FALSE,
+                     end_pattern = c(".r", ".i"), code_pattern = c(1, 0),
+                     return_indicator = TRUE){
 
   vars <- match_ir(data, var_stem, end_pattern)
   matched_new <- stringr::str_replace(var_stem, "\\.$", "")
@@ -84,8 +91,14 @@ imaginer <- function(data, var_stem, return_complete_data = FALSE, end_pattern =
   return_var[!na_2] <- data[!na_2, var_name_2]
 
   ## now generate output
-  df_out <- data.frame(origin_var, return_var)
-  names(df_out) <- c(origin_var_name, matched_new)
+  if (return_indicator) {
+    df_out <- data.frame(origin_var, return_var)
+    names(df_out) <- c(origin_var_name, matched_new)
+  } else {
+    df_out <- data.frame(return_var)
+    names(df_out) <- c(matched_new)
+  }
+
 
   if (return_complete_data) {
     return <- cbind(data, df_out)

@@ -5,7 +5,7 @@
 \title{Match Two Items, Select, and Document}
 \usage{
 imaginer(data, var_stem, return_complete_data = FALSE, end_pattern = c(".r",
-  ".i"), code_pattern = c(1, 0))
+  ".i"), code_pattern = c(1, 0), return_indicator = TRUE)
 }
 \arguments{
 \item{data}{The data frame that contains the variables}
@@ -16,7 +16,9 @@ imaginer(data, var_stem, return_complete_data = FALSE, end_pattern = c(".r",
 
 \item{end_pattern}{The end pattern to search for. Default is \code{c(".r", ".i")}}
 
-\item{code_pattern}{The code pattern to be used. Default is \code{c(1, 0)}. This means that if a value originates from the .r-variable, it is documented with a 1, and if it originates from a .i-variable, it is documented with a 0. If both columns (.r and .i) contain a missing value for a person, this value will be coded as 999.}
+\item{code_pattern}{The code pattern to be used. Default is \code{c(1, 0)}. This means that if a value originates from the .r-variable, it is documented with a 1, and if it originates from a .i-variable, it is documented with a 0 in the indicator variable. If both columns (.r and .i) contain a missing value for a person, this value will be coded as 999.}
+
+\item{return_indiciator}{Logical. Should the indicator variable be returned as well? Default is to \code{TRUE}. If set to \code{FALSE}, only the final, merged variable is returned}
 }
 \value{
 A data frame with either 2 colums or all original columns and two additional columns.
@@ -27,5 +29,9 @@ This function matches two items (identified based on their stem, see \code{\link
 \examples{
 data <- imaginer_example_data
 imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE)
+
+## return without the indicator variable
+imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE,
+return_indicator = FALSE)
 }
 
