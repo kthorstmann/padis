@@ -160,6 +160,53 @@ head(return_df, 10)
 
 ```
 
+## Functions for splitting the data frames 
+
+There are two functions to split the raw data frames:
+
+- `get_selection_long`: Turn raw daily data into the selection data set
+- `transform_data`: Turn raw daily data and intake data sets into the five specific data sets
+
+First, the data sets need to be loaded (this part is not documented here)
+
+```{r read data, eval = TRUE, echo = FALSE}
+
+## First, the data need to be read:
+
+setwd("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data")
+data_dy <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data/Raw Diary Selection Data.csv", sep = ";", stringsAsFactors = FALSE)
+data_in <- xlsx::read.xlsx("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data/Raw Intake Sample.xlsx", 1)
+
+
+```
+
+
+```{r show intput data}
+
+head(data_dy, 3)
+head(data_in, 3)
+```
+
+
+### get_selection_long
+
+
+```{r get_selection_long}
+library(padis)
+selection_long <- get_selection_long(data_dy)
+head(selection_long, 3)
+
+```
+
+
+### transform_data
+
+
+```{r transform data}
+# the results will now appear (in the default mode) in the workspace
+transform_data(data_dy, data_in, overwrite=TRUE)
+```
+
 
 
 

@@ -54,7 +54,7 @@ swap_char <- function(string, separator = ".", unifyer = "_"){
 generate_stems <- function(strings, search = "\\d+$"){
   all_stems <- stringr::str_replace_all(strings, search, "")
   t <- table(all_stems)
-  valid_stems <- t[t > 1]
+  valid_stems <- t[t >= 1]
   re_stems <- names(valid_stems)
   re_stems
 }
@@ -187,7 +187,7 @@ write_to_ws <- function(object, overwrite = FALSE){
 #'
 #' @param data The data frame that should be saved
 #' @param folder The folder in whoch the data is stored. If NULL, the current working directory is used.
-#' @param type The type of the output, either \code{"xlsx} or \code{"csv}
+#' @param type The type of the output, either \code{"xlsx"} or \code{"csv"}
 #' @param name The name of the file. If NULL, the name of the object is used.
 #' @param overwrite Logical, if \code{TRUE}, the file saved, even if it already exists. Default is to \code{FALSE}.
 #'
@@ -196,7 +196,6 @@ write_to_ws <- function(object, overwrite = FALSE){
 #'
 write_to_wd <- function(data, folder = NULL, type = "xlsx", name = NULL, overwrite = FALSE){
   stopifnot(type == "xlsx" || type == "csv")
-  # if no folder is specified, write to wd
 
   if (is.null(folder)) {
     folder <- getwd()
@@ -205,22 +204,20 @@ write_to_wd <- function(data, folder = NULL, type = "xlsx", name = NULL, overwri
     name <- deparse(substitute(data))
   }
 
-  check_exist_wd(name, folder=folder)
+  file_name <- paste0(name,".", type)
   if (type == "xlsx") {
-    file_name <- paste0(name,".", type)
-    if (check_exist_wd(file_name, folder=folder)) {
+    if (check_exist_wd(file_name, folder=folder) && overwrite == FALSE) {
       stop("The file '", file_name, "' already exists in the chosen working directory:", folder, ". \nPlease set 'overwrite = TRUE' or remove the file before proceeding")
     }
     xlsx::write.xlsx(data, paste0(folder, "/", name, ".", type), row.names=FALSE)
   }
   if (type == "csv") {
-    if (check_exist_wd(file_name, folder=folder)) {
+    if (check_exist_wd(file_name, folder=folder) && overwrite == FALSE) {
       stop("The file '", file_name, "' already exists in the chosen working directory:", folder, ". \nPlease set 'overwrite = TRUE' or remove the file before proceeding")
     }
     write.csv(data, paste0(folder, "/", name, ".", type), row.names=FALSE)
   }
 }
-
 
 #' Turns factors to character strings in a data frame
 #'

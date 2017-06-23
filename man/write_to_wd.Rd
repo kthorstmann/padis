@@ -12,7 +12,7 @@ write_to_wd(data, folder = NULL, type = "xlsx", name = NULL,
 
 \item{folder}{The folder in whoch the data is stored. If NULL, the current working directory is used.}
 
-\item{type}{The type of the output, either \code{"xlsx} or \code{"csv}}
+\item{type}{The type of the output, either \code{"xlsx"} or \code{"csv"}}
 
 \item{name}{The name of the file. If NULL, the name of the object is used.}
 

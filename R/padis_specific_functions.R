@@ -110,5 +110,116 @@ imaginer <- function(data, var_stem, return_complete_data = FALSE,
 
 
 
+#' Turn Daily Data Into Issue Long Data
+#'
+#' This function is very specific and can only turn the daily data into the Selection long data.
+#'
+#' @param data The daily data that should be turned into the long form data
+#'
+#' @return Returns the Selection data-set
+#' @export
+#'
+#' @examples
+#' ## not run
+#' # these examples work only with the correct data frames
+#' data_dy <- read.csv("Raw Diary Selection Data.csv", sep = ";", stringsAsFactors = FALSE)
+#' issue <- get_issue_long(data_dy)
+#' head(issue)
+get_selection_long <- function(data){
+  data_dy <- data
+  data_dy_names <- names(data_dy)
+  sought_variables_id <- c("PAR.ID", "Day.Num", "Day.UniqueID", "Day.DaysIn", "Issue.Num.1", "Issue.UniqueID.1")
+
+  ## nested variables
+  sought_patterns <- c("Sought.+\\.1$", "PSP.Num.+\\.1$", "PSP.Unique.+\\.1$",
+                       "Sought.+\\.2$", "PSP.Num.+\\.2$", "PSP.Unique.+\\.2$")
+
+  sought_vars <- purrr::map(sought_patterns, ~ grep(x = data_dy_names, pattern = ., value = TRUE))
+  search_pattern <- c(rep("\\.\\d+\\.1$", 3), rep("\\.\\d+\\.2$", 3))
+
+  gather_sought <- function(vars, search_pattern){
+    sought_data <- data_dy[c(sought_variables_id, vars)]
+    long_data <- gather_multiple(sought_data, key_vars=sought_variables_id, search = search_pattern)
+    long_data
+  }
+
+  long_data_list <- purrr::map2(.x=sought_vars, .y=search_pattern, ~ gather_sought(vars=.x, search_pattern=.y))
+  nrows <- unlist(purrr::map(long_data_list, nrow))
+
+  ## add indicator variable for sought issue
+  sought_issue <- rep(1, nrows[1])
+  long_data_list_1 <- purrr::map(long_data_list[c(1:3)], ~ cbind(., sought_issue))
+
+  sought_issue <- rep(2, nrows[1])
+  long_data_list_2 <- purrr::map(long_data_list[c(4:6)], ~ cbind(., sought_issue))
+
+  sought <- rbind(long_data_list_1[[1]], long_data_list_2[[1]])
+  num <- rbind(long_data_list_1[[2]], long_data_list_2[[2]])
+  unique <- rbind(long_data_list_1[[3]], long_data_list_2[[3]])
+
+  id_vars <- sought[c(sought_variables_id, "sought_issue")]
+  sought_select <- dplyr::select(sought, dplyr::matches("Sought\\.."))
+  num_select <- dplyr::select(num, dplyr::matches("Num\\.."))
+  unique_select <- unique["PSP.UniqueID"]
+
+  sought_long <- cbind(id_vars, sought_select, num_select, unique_select)
+  sought_long
+}
+
+
+#' Transform Daily and Intake Data In Five Different Data Sets
+#'
+#' This function is very specific and takes as input only the two data frames daily and intake raw data. It will then return the five data sets, named 1. "par_data", 2. "psp_long", 3. "day_data", 4. "issue_long", 5. "selection_long")
+#'
+#' @param daily_data The Daily Raw data
+#' @param intake_data The Raw Intake data
+#' @param write_to Where the results should be written to. Can either be "workspace" (default), "xlsx", or "csv". The last two write the resulting data frames into the working directory either as .xlsx-files or .csv-files
+#' @param overwrite Logical, should an existing data frame/object be overwritten? Default is to \code{FALSE}
+#' @param folder The folder in which the resulting data sets should be written. If no folder is specified, the current working directory (result of \code{getwd()}) is used
+#'
+#' @return The function returns the five different data sets in long format
+#' @export
+#'
+#' @examples
+#' ## not run
+#' # these examples work only with the correct data frames
+#' data_dy <- read.csv("Raw Diary Selection Data.csv", sep = ";", stringsAsFactors = FALSE)
+#' data_in <- xlsx::read.xlsx("Raw Intake Sample.xlsx", 1)
+#' transform_data(data_dy, data_in)
+transform_data <- function(daily_data, intake_data, write_to = "workspace", overwrite = FALSE, folder = NULL){
+  data_in <- intake_data
+  data_dy <- daily_data
+  ## 1. participant data set:
+  par_data <- padis::select_vars(data_in, ids = c("PAR.ID"), prefix = "^PAR")
+
+  ## 2. PSP level data set:
+  psp_data <- padis::select_vars(data_in, ids = c("PAR.ID"), prefix = "^PSP")
+  psp_long <- padis::gather_multiple(psp_data, key_vars=c("PAR.ID"), search="PSP\\d+\\.")
+
+  ## 3. DAY level (they are already correctly aggregated)
+  day_data <- padis::select_vars(data_dy, ids = c("PAR.ID"), prefix = "^Day")
+
+  ## 4. Issue level
+  issue_data <- padis::select_vars(data_dy, ids = c("PAR.ID", "Day.Num", "Day.UniqueID", "Day.DaysIn"), prefix = "Issue")
+  issue_long <- padis::gather_multiple(issue_data, key_vars=c("PAR.ID", "Day.Num", "Day.UniqueID", "Day.DaysIn"), search="Issue")
+
+  ## 5. sought level data
+  selection_long <- padis::get_selection_long(data_dy)
+
+  ### combine all data sets
+  ## make list with data frames
+  names_df_long <- c("PAR_data", "PSP_data", "DAY_data", "ISSUE_data", "SELECTION_data")
+  datasets <- c("par_data", "psp_long", "day_data", "issue_long", "selection_long")
+
+  if (write_to == "workspace") {
+    eval(parse(text = paste0("write_to_ws(", datasets,", overwrite = ", overwrite, ")")))
+  } else
+    if (write_to == "xlsx" || write_to == "csv") {
+      eval(parse(text =
+                   paste0("write_to_wd(",datasets,", folder = '", folder, "', type = '", write_to,"', name = '", names_df_long,"', overwrite = '",   overwrite,"')")
+      ))
+      message("The outputfiles were written to you working directory or the folder you have specified")
+    }
+}
 
 
