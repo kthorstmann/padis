@@ -9,6 +9,7 @@ License: CC-BY 4.0
 LazyData: TRUE
 RoxygenNote: 5.0.1
 Imports:
+  dplyr,
   tidyr,
   data.table,
   stringr,
