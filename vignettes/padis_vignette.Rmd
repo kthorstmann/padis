@@ -187,10 +187,11 @@ data_short_3 <- data.frame(PAR.ID = rep(letters[1:10], 1),
                           var1 = sample(1:40, 10),
                           var2 = sample(1:40, 10))
 
+library(padis)
 
 
 ## merge down, i. e. duplicate rows when going from a higher data set (e.g .level-2) to a lower data set (e.g. level-1)
-data_list <- merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE)
+data_list <- merge_multiple_df(data_from= data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE, select_variables = "var2")
 purrr::map(data_list, head)
 ## merge up, i. e. make the longer data frame short first and merge then
 data_list <- merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)

@@ -4,7 +4,8 @@
 \alias{merge_multiple_df}
 \title{Merge One Data Frame Into Several Data Frames}
 \usage{
-merge_multiple_df(data_from, id_var, data_list_to, merge_down = TRUE)
+merge_multiple_df(data_from, id_var, data_list_to, merge_down = TRUE,
+  select_variables = NULL)
 }
 \arguments{
 \item{data_from}{The data frame from which to merge}
@@ -14,6 +15,8 @@ merge_multiple_df(data_from, id_var, data_list_to, merge_down = TRUE)
 \item{data_list_to}{A list of data frames into which the data frame \code{data_from} is merged into}
 
 \item{merge_down}{Logical, should the \code{data_from} be duplicated in order to merge down (\code{TRUE}), or should the duplicate rows be removed first in order to merge up? (\code{FALSE}). Default is to \code{TRUE}}
+
+\item{select_vars}{A character vector of the variables that should be selected from the data frame \code{data_from}. If NULL, all variables are selected and merged into the other data frames in \code{data_list_to}}
 }
 \value{
 A list containing data frames with the same length as \code{data_list_to}.

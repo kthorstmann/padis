@@ -356,6 +356,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
 #' @param id_var The id or group-variable to merge by
 #' @param data_list_to A list of data frames into which the data frame \code{data_from} is merged into
 #' @param merge_down Logical, should the \code{data_from} be duplicated in order to merge down (\code{TRUE}), or should the duplicate rows be removed first in order to merge up? (\code{FALSE}). Default is to \code{TRUE}
+#' @param select_vars A character vector of the variables that should be selected from the data frame \code{data_from}. If NULL, all variables are selected and merged into the other data frames in \code{data_list_to}
 #'
 #' @return A list containing data frames with the same length as \code{data_list_to}.
 #' @export
@@ -384,8 +385,14 @@ aggregate_df <- function(data, id, remove_var = NULL,
 #'
 #'## merge up, i. e. make the longer data frame short first and merge then
 #'merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)
-merge_multiple_df <- function(data_from, id_var, data_list_to, merge_down = TRUE) {
-  stopifnot(is.data.frame(data))
+merge_multiple_df <- function(data_from, id_var, data_list_to, merge_down = TRUE, select_variables = NULL) {
+
+  if(!is.null(select_variables)) {
+    data_from <- data_from[c(id_var, select_variables)]
+  }
+
+  stopifnot(is.data.frame(data_from))
+
   stopifnot(is.logical(merge_down))
   if (!merge_down) {
     data_from <- data_from[!duplicated(data_from),]
