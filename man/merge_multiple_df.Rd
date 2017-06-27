@@ -33,6 +33,10 @@ data_long_1 <- data.frame(PAR.ID = letters[1:10],
 data_long_2 <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
                          var1 = sort(rep(1:10, 3)),
                          var2 = sort(rep(11:20, 3)))
+data_long_2_er <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
+                         var1 = sort(rep(1:10, 3)),
+                         var2 = sort(rep(11:20, 3)))
+data_long_2_er[3, "var2"] <- 12 ## add a variable that is not the same as the other variables
 data_long_3 <- data.frame(PAR.ID = rep(letters[1:10], 4),
                          var1 = sample(1:40, 40),
                          var2 = sample(1:40, 40))
@@ -47,6 +51,8 @@ data_short_3 <- data.frame(PAR.ID = rep(letters[1:10], 1),
 merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE)
 
 ## merge up, i. e. make the longer data frame short first and merge then
-merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)
+merge_multiple_df(data_from = data_long_2, id_var="PAR.ID", data_list_to = list(data_short_2, data_short_3), merge_down = FALSE)
+## merge up, i. e. make the longer data frame short first and merge then and give a warning if duplicates arise
+merge_multiple_df(data_from = data_long_2_er, id_var="PAR.ID", data_list_to = list(data_short_2, data_short_3), merge_down = FALSE)
 }
 

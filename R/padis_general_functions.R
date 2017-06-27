@@ -370,6 +370,10 @@ aggregate_df <- function(data, id, remove_var = NULL,
 #'data_long_2 <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
 #'                          var1 = sort(rep(1:10, 3)),
 #'                          var2 = sort(rep(11:20, 3)))
+#'data_long_2_er <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
+#'                          var1 = sort(rep(1:10, 3)),
+#'                          var2 = sort(rep(11:20, 3)))
+#'data_long_2_er[3, "var2"] <- 12 ## add a variable that is not the same as the other variables
 #'data_long_3 <- data.frame(PAR.ID = rep(letters[1:10], 4),
 #'                          var1 = sample(1:40, 40),
 #'                          var2 = sample(1:40, 40))
@@ -384,7 +388,9 @@ aggregate_df <- function(data, id, remove_var = NULL,
 #'merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE)
 #'
 #'## merge up, i. e. make the longer data frame short first and merge then
-#'merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)
+#'merge_multiple_df(data_from = data_long_2, id_var="PAR.ID", data_list_to = list(data_short_2, data_short_3), merge_down = FALSE)
+#'## merge up, i. e. make the longer data frame short first and merge then and give a warning if duplicates arise
+#'merge_multiple_df(data_from = data_long_2_er, id_var="PAR.ID", data_list_to = list(data_short_2, data_short_3), merge_down = FALSE)
 merge_multiple_df <- function(data_from, id_var, data_list_to, merge_down = TRUE, select_variables = NULL) {
 
   if(!is.null(select_variables)) {
@@ -392,10 +398,15 @@ merge_multiple_df <- function(data_from, id_var, data_list_to, merge_down = TRUE
   }
 
   stopifnot(is.data.frame(data_from))
-
   stopifnot(is.logical(merge_down))
+
   if (!merge_down) {
     data_from <- data_from[!duplicated(data_from),]
+    if (any(table(data_from[id_var]) > 1)) {
+      which_not_unique <- names(which(table(data_from[id_var]) > 1))
+      which_not_unique <- paste0(which_not_unique, collapse ="\n")
+      warning("the following ids contain do not contain unique values in their variables: \n", which_not_unique)
+    }
   }
   purrr::map(data_list_to, ~ dplyr::full_join(data_from, ., by = id_var))
 }
