@@ -388,7 +388,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
 merge_multiple_df <- function(data_from, id_var, data_list_to, merge_down = TRUE, select_variables = NULL) {
 
   if(!is.null(select_variables)) {
-    data_from <- data_from[c(id_var, select_variables)]
+    data_from <- padis::select_vars(data=data_from, ids=id_var, prefix=select_variables)
   }
 
   stopifnot(is.data.frame(data_from))

@@ -166,10 +166,10 @@ head(return_df, 10)
 
 This function merges all data up or down into several other data sets. If `merge_down = FALSE`, the data will be merged up, i.e. unique rows of the dataframe `data_from` will be used for the aggregation.
 
-The result is a list with data frames with the same length as `data_list_to`, which has to be a list of data frames as well
+The result is a list with data frames with the same length as `data_list_to`, which has to be a list of data frames as well. The argument `select_variables` allows selecting a specific set of variabels, based on their prefix (this is based on the function `padis::select_vars`).
 
 ```{r merge_multiple_df}
-
+library(padis)
 ## simulate data
 data_long_1 <- data.frame(PAR.ID = letters[1:10],
                           var1 = sample(1:10, 10),
@@ -187,10 +187,9 @@ data_short_3 <- data.frame(PAR.ID = rep(letters[1:10], 1),
                           var1 = sample(1:40, 10),
                           var2 = sample(1:40, 10))
 
-library(padis)
 
 
-## merge down, i. e. duplicate rows when going from a higher data set (e.g .level-2) to a lower data set (e.g. level-1)
+## merge down, i. e. duplicate rows when going from a higher data set (e.g .level-2) to a lower data set (e.g. level-1), here, also select one additional variable from data_from (this could also be a prefix)
 data_list <- merge_multiple_df(data_from= data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE, select_variables = "var2")
 purrr::map(data_list, head)
 ## merge up, i. e. make the longer data frame short first and merge then
@@ -205,8 +204,8 @@ If variables need to selected first, use the function `select_vars` to select va
 
 ```{r example select, eval = FALSE, echo = TRUE}
 
-selected_variables <- padis::select_vars(data=data, ids="PAR.ID", prefix="the_prefix_of_the_variables")
-data <- data[selected_variables]
+select_df <- padis::select_vars(data=data, ids="PAR.ID", prefix="the_prefix_of_the_variables")
+
 
 ```
 
