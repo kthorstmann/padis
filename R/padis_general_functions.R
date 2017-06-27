@@ -350,6 +350,47 @@ aggregate_df <- function(data, id, remove_var = NULL,
   return(df)
 }
 
-
+#' Merge One Data Frame Into Several Data Frames
+#'
+#' @param data_from The data frame from which to merge
+#' @param id_var The id or group-variable to merge by
+#' @param data_list_to A list of data frames into which the data frame \code{data_from} is merged into
+#' @param merge_down Logical, should the \code{data_from} be duplicated in order to merge down (\code{TRUE}), or should the duplicate rows be removed first in order to merge up? (\code{FALSE}). Default is to \code{TRUE}
+#'
+#' @return A list containing data frames with the same length as \code{data_list_to}.
+#' @export
+#'
+#' @examples
+#' ## simulate data
+#' # long data
+#'data_long_1 <- data.frame(PAR.ID = letters[1:10],
+#'                          var1 = sample(1:10, 10),
+#'                          var2 = sample(1:10, 10))
+#'data_long_2 <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
+#'                          var1 = sort(rep(1:10, 3)),
+#'                          var2 = sort(rep(11:20, 3)))
+#'data_long_3 <- data.frame(PAR.ID = rep(letters[1:10], 4),
+#'                          var1 = sample(1:40, 40),
+#'                          var2 = sample(1:40, 40))
+#'# short data
+#'data_short_2 <- data.frame(PAR.ID = rep(letters[1:10], 1),
+#'                           var1 = sample(1:40, 10),
+#'                           var2 = sample(1:40, 10))
+#'data_short_3 <- data.frame(PAR.ID = rep(letters[1:10], 1),
+#'                           var1 = sample(1:40, 10),
+#'                           var2 = sample(1:40, 10))
+#'## merge down, i. e. duplicate rows when going from a higher data set (e.g .level-2) to a lower data set (e.g. level-1)
+#'merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE)
+#'
+#'## merge up, i. e. make the longer data frame short first and merge then
+#'merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)
+merge_multiple_df <- function(data_from, id_var, data_list_to, merge_down = TRUE) {
+  stopifnot(is.data.frame(data))
+  stopifnot(is.logical(merge_down))
+  if (!merge_down) {
+    data_from <- data_from[!duplicated(data_from),]
+  }
+  purrr::map(data_list_to, ~ dplyr::full_join(data_from, ., by = id_var))
+}
 
 

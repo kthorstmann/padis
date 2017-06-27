@@ -21,6 +21,7 @@ It relies on several different packages, which are installed automatically once 
 - xlsx
 - purrr
 - psych
+- dplyr
 
 
 ## How to install this package:
@@ -160,6 +161,55 @@ head(return_df, 10)
 
 ```
 
+
+### merge_multiple_df
+
+This function merges all data up or down into several other data sets. If `merge_down = FALSE`, the data will be merged up, i.e. unique rows of the dataframe `data_from` will be used for the aggregation.
+
+The result is a list with data frames with the same length as `data_list_to`, which has to be a list of data frames as well
+
+```{r merge_multiple_df}
+
+## simulate data
+data_long_1 <- data.frame(PAR.ID = letters[1:10],
+                          var1 = sample(1:10, 10),
+                          var2 = sample(1:10, 10))
+data_long_2 <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
+                          var1 = sort(rep(1:10, 3)),
+                          var2 = sort(rep(11:20, 3)))
+data_long_3 <- data.frame(PAR.ID = rep(letters[1:10], 4),
+                          var1 = sample(1:40, 40),
+                          var2 = sample(1:40, 40))
+data_short_2 <- data.frame(PAR.ID = rep(letters[1:10], 1),
+                          var1 = sample(1:40, 10),
+                          var2 = sample(1:40, 10))
+data_short_3 <- data.frame(PAR.ID = rep(letters[1:10], 1),
+                          var1 = sample(1:40, 10),
+                          var2 = sample(1:40, 10))
+
+
+
+## merge down, i. e. duplicate rows when going from a higher data set (e.g .level-2) to a lower data set (e.g. level-1)
+data_list <- merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE)
+purrr::map(data_list, head)
+## merge up, i. e. make the longer data frame short first and merge then
+data_list <- merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)
+purrr::map(data_list, head)
+
+
+
+```
+
+If variables need to selected first, use the function `select_vars` to select variables from a data frame first, e.g.
+
+```{r example select, eval = FALSE, echo = TRUE}
+
+selected_variables <- padis::select_vars(data=data, ids="PAR.ID", prefix="the_prefix_of_the_variables")
+data <- data[selected_variables]
+
+```
+
+
 ## Functions for splitting the data frames 
 
 There are two functions to split the raw data frames:
@@ -209,6 +259,33 @@ transform_data(data_dy, data_in, overwrite=TRUE)
 
 
 
+## Example
+
+
+```{r }
+
+data <- read.csv2("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_2/KaiTrial.csv", sep = ",")
+library(padis)
+
+## this would be for one variable
+match_ir(data, var_stem="Issue1.PSP3.ContactChat.")
+return_df <- imaginer(data, var_stem="Issue1.PSP3.ContactChat.", return_complete_data=FALSE)
+head(return_df)
+
+
+## if you want to do this now for every variable, do:
+names_data <- names(data)## get the names
+issue_vars <- grep(x = names_data, pattern = "Issue+.+i$", value = TRUE) ## get the names that end with .i
+stems <- stringr::str_replace_all(issue_vars, ".i$", "") ## replace the .i with nothing
+
+list <- list()
+
+for (i in seq_along(stems)) { ## a for loop
+  list[[i]] <- imaginer(data, var_stem=stems[i], return_complete_data=FALSE)
+}
+purrr::map(list, head)
+
+```
 
 
 
