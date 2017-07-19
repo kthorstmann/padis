@@ -5,7 +5,8 @@
 \title{Compute summary statistics within groups in a nested data frame}
 \usage{
 aggregate_df(data, id, remove_var = NULL, intake_var = NULL,
-  out_values = c("mean", "sd", "count", "sum", "missing", "cor"))
+  out_values = c("mean", "sd", "count", "sum", "missing", "cor", "min", "max",
+  "true"))
 }
 \arguments{
 \item{data}{The data frame in long-format that contains the variables to be analysed}
@@ -24,6 +25,9 @@ aggregate_df(data, id, remove_var = NULL, intake_var = NULL,
   \item{\code{"sum"}}{Computes the sum of values within each group/id. Missing values are removed before computation.}
   \item{\code{"missing"}}{Counts the number of missing values in each group/id.}
   \item{\code{"cor"}}{Computes the within-correlation for each variable within each group/id. Pearson correlation (\code{\link{cor}}) with \code{"pairwise.complete.obs"} is used.}
+  \item{\code{"max"}}{Returns the maximum in each group/id, ignoring NAs.}
+  \item{\code{"min"}}{Returns the minimum in each group/id, ignoring NAs.}
+  \item{\code{"true"}}{Per group/id, returns 0 if the group/id contains any other value than 0, otherwise returns 1. Missings are ignored.}
 }}
 }
 \value{

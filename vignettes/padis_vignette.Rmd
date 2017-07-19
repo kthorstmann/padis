@@ -3,10 +3,7 @@ title: "PADIS vignette"
 author: "Kai T. Horstmann"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+
 ---
 
 # Introduction
@@ -115,6 +112,52 @@ head(df)
 ```
 
 
+Example when doing computations only on a few variables:
+
+
+```{r aggregate_df example 1}
+
+# Here, we keep only a few variables, i.e. var_p_1 and var_p_2
+head(wide_example_data)
+df <- aggregate_df(wide_example_data, id="id", 
+                   intake_var=c("var_p_1", "var_p_2"))
+head(df)
+
+```
+
+
+Missing data in the ID variable:
+
+```{r aggregate_df with missings}
+
+## we add some missings:
+
+wide_with_missings <- wide_example_data
+wide_with_missings[sample(1:nrow(wide_with_missings), 10),"id"] <- NA
+wide_with_missings[sample(1:nrow(wide_with_missings), 10),"var_p_1"] <- NA
+
+df <- aggregate_df(wide_with_missings, id="id", 
+                   intake_var=c("var_p_1", "var_p_2"))
+
+
+```
+
+
+```{r aggregate on special data}
+data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_2/Aggregating.csv")
+df <- aggregate_df(data, id="PAR.ID")
+head(df)
+
+## return only the sd per participant
+df <- aggregate_df(data, id="PAR.ID", out_values="sd")
+head(df)
+
+
+```
+
+
+
+
 ## Saving data
 
 ```{r write_to_wd, message=FALSE, error=FALSE, eval = FALSE, echo = TRUE}
@@ -177,6 +220,10 @@ data_long_1 <- data.frame(PAR.ID = letters[1:10],
 data_long_2 <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
                           var1 = sort(rep(1:10, 3)),
                           var2 = sort(rep(11:20, 3)))
+data_long_2_er <- data.frame(PAR.ID = sort(rep(letters[1:10], 3)),
+                          var1 = sort(rep(1:10, 3)),
+                          var2 = sort(rep(11:20, 3)))
+data_long_2_er[3, "var2"] <- 12 ## add a variable that is not the same as the other variables
 data_long_3 <- data.frame(PAR.ID = rep(letters[1:10], 4),
                           var1 = sample(1:40, 40),
                           var2 = sample(1:40, 40))
@@ -190,12 +237,14 @@ data_short_3 <- data.frame(PAR.ID = rep(letters[1:10], 1),
 
 
 ## merge down, i. e. duplicate rows when going from a higher data set (e.g .level-2) to a lower data set (e.g. level-1), here, also select one additional variable from data_from (this could also be a prefix)
-data_list <- merge_multiple_df(data_from= data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE, select_variables = "var2")
+data_list <- merge_multiple_df(data_from = data_long_1, id_var="PAR.ID", list(data_long_2, data_long_3), merge_down = TRUE, select_variables = "var2")
 purrr::map(data_list, head)
 ## merge up, i. e. make the longer data frame short first and merge then
-data_list <- merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = TRUE)
+data_list <- merge_multiple_df(data_long_1, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = FALSE, select_variables = "var2")
 purrr::map(data_list, head)
 
+data_list <- merge_multiple_df(data_long_2_er, id_var="PAR.ID", list(data_short_2, data_short_3), merge_down = FALSE, select_variables = "var2")
+purrr::map(data_list, head)
 
 
 ```
@@ -205,7 +254,6 @@ If variables need to selected first, use the function `select_vars` to select va
 ```{r example select, eval = FALSE, echo = TRUE}
 
 select_df <- padis::select_vars(data=data, ids="PAR.ID", prefix="the_prefix_of_the_variables")
-
 
 ```
 
@@ -284,6 +332,23 @@ for (i in seq_along(stems)) { ## a for loop
   list[[i]] <- imaginer(data, var_stem=stems[i], return_complete_data=FALSE)
 }
 purrr::map(list, head)
+
+```
+
+### Working with lists
+
+Wotking with lists makes things easier, because multiple data frames can be used at the same time.
+
+```{r examples lists}
+
+## get the head of each data frame in the list object list
+purrr::map(data_list, head)
+
+## get the head of each data frame in the list object list
+purrr::map(data_list, psych::describe)
+
+## or make your own function
+purrr::map(data_list, function(x) {x + 1}) # in this case add one two each variable. If the variable is not numerical, then there is a Warning (and in this case, Missings arise)
 
 ```
 
