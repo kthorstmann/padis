@@ -352,7 +352,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
   if ("true" %in% out_values) {
     check_0 <- function(x, na.rm = TRUE){
       if (na.rm) x <- na.omit(x)
-      ifelse(any(x != 0), 0, 1)
+      ifelse(any(x != 0), 1, 0)
     }
     within_true <- aggregate(data[, compute_var], list(data[,id]), function(x) check_0(x, na.rm = TRUE))[-1]
     names(within_true) <- paste0(id, ".", names(within_true), ".true")
