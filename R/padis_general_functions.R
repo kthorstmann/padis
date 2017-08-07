@@ -268,6 +268,9 @@ fac_to_chr <- function(data){
 #' @examples
 #' df <- aggregate_df(wide_example_data, id="id")
 #' head(df)
+#' data <- wide_example_data
+#' id = "id"
+#'
 aggregate_df <- function(data, id, remove_var = NULL,
                          intake_var = NULL,
                          out_values = c("mean", "sd", "count", "sum", "missing", "cor", "min", "max", "true")){
@@ -327,7 +330,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
     df <- cbind(df, within_sum)
   }
   if ("count" %in% out_values) {
-    within_n <- aggregate(data[, compute_var], list(data[,id]), function(x) NROW(x))[-1]
+    within_n <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(!is.na(x)))[-1]
     names(within_n) <- paste0(id, ".", names(within_n), ".n")
     df <- cbind(df, within_n)
   }
