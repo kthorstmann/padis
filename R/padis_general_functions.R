@@ -268,9 +268,6 @@ fac_to_chr <- function(data){
 #' @examples
 #' df <- aggregate_df(wide_example_data, id="id")
 #' head(df)
-#' data <- wide_example_data
-#' id = "id"
-#'
 aggregate_df <- function(data, id, remove_var = NULL,
                          intake_var = NULL,
                          out_values = c("mean", "sd", "count", "sum", "missing", "cor", "min", "max", "true")){

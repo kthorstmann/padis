@@ -3,7 +3,6 @@ title: "PADIS vignette"
 author: "Kai T. Horstmann"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-
 ---
 
 # Introduction
