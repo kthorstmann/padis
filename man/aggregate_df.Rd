@@ -4,9 +4,9 @@
 \alias{aggregate_df}
 \title{Compute summary statistics within groups in a nested data frame}
 \usage{
-aggregate_df(data, id, remove_var = NULL, intake_var = NULL,
-  out_values = c("mean", "sd", "count", "sum", "missing", "cor", "min", "max",
-  "true"))
+aggregate_df(data, id, remove_var = NULL, prefix_out = NULL,
+  intake_var = NULL, out_values = c("mean", "sd", "count", "sum", "missing",
+  "cor", "min", "max", "true"))
 }
 \arguments{
 \item{data}{The data frame in long-format that contains the variables to be analysed}
@@ -14,6 +14,8 @@ aggregate_df(data, id, remove_var = NULL, intake_var = NULL,
 \item{id}{Character string. The id or grouping variable, in which other observations are nested}
 
 \item{remove_var}{Character string. Variables that should be removed before the computation proceeds (otherwise, the function assumes that all other variables should be used for the computation)}
+
+\item{prefix_out}{The prefix for the variables that are returned. Default is \code{NULL}. If \code{NULL}, the input from \code{id} is used as prefix.}
 
 \item{intake_var}{Character string. Specific variables (e.g. names of these variables) for which the ananylses should be run, i. e. if only a subset of variables should be used.}
 
