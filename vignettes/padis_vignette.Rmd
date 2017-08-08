@@ -351,6 +351,19 @@ purrr::map(data_list, function(x) {x + 1}) # in this case add one two each varia
 
 ```
 
+```{r example day level data}
+
+ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_4/DayLevel 17.08.01.csv")
+ssd.agg.day <- aggregate_df(ssd.day, id="PAR.ID", out_values="max")
+head(ssd.day)
+str(ssd.day)
+
+# ok problem only missing data 
+sd(c(NA, NA, NA), na.rm = TRUE)
+
+warnings()
+max(1)
+```
 
 
 

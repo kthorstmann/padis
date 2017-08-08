@@ -248,6 +248,7 @@ fac_to_chr <- function(data){
 #' @param data The data frame in long-format that contains the variables to be analysed
 #' @param id Character string. The id or grouping variable, in which other observations are nested
 #' @param remove_var Character string. Variables that should be removed before the computation proceeds (otherwise, the function assumes that all other variables should be used for the computation)
+#' @param prefix_out The prefix for the variables that are returned. Default is \code{NULL}. If \code{NULL}, the input from \code{id} is used as prefix.
 #' @param intake_var Character string. Specific variables (e.g. names of these variables) for which the ananylses should be run, i. e. if only a subset of variables should be used.
 #' @param out_values The values to be returned. Can be either
 #' \describe{
@@ -269,13 +270,16 @@ fac_to_chr <- function(data){
 #' df <- aggregate_df(wide_example_data, id="id")
 #' head(df)
 aggregate_df <- function(data, id, remove_var = NULL,
+                         prefix_out = NULL,
                          intake_var = NULL,
                          out_values = c("mean", "sd", "count", "sum", "missing", "cor", "min", "max", "true")){
-  data <- padis::fac_to_chr(data)
+
 
   stopifnot(is.character(id))
   stopifnot(is.character(intake_var) || is.null(intake_var))
   stopifnot(is.data.frame(data))
+
+  if (is.null(prefix_out)) {prefix_out <- id}
 
 
   if (is.null(intake_var)) {
@@ -283,6 +287,8 @@ aggregate_df <- function(data, id, remove_var = NULL,
   } else {
     compute_var <- intake_var
   }
+
+  data <- padis::fac_to_chr(data[compute_var])
 
   ## check that there are only numerics in the data frame
   i <- sapply(data[compute_var], is.numeric)
@@ -313,37 +319,37 @@ aggregate_df <- function(data, id, remove_var = NULL,
 
   if ("mean" %in% out_values) {
     within_mean <- aggregate(data[, compute_var], list(data[,id]), function(x) mean(x, na.rm = TRUE))[-1]
-    names(within_mean) <- paste0(id, ".", names(within_mean), ".mean")
+    names(within_mean) <- paste0(prefix_out, ".", names(within_mean), ".mean")
     df <- cbind(df, within_mean)
   }
   if ("sd" %in% out_values) {
     within_sd <- aggregate(data[, compute_var], list(data[,id]), function(x) sd(x, na.rm = TRUE))[-1]
-    names(within_sd) <- paste0(id, ".", names(within_sd), ".sd")
+    names(within_sd) <- paste0(prefix_out, ".", names(within_sd), ".sd")
     df <- cbind(df, within_sd)
   }
   if ("sum" %in% out_values) {
     within_sum <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(x, na.rm = TRUE))[-1]
-    names(within_sum) <- paste0(id, ".", names(within_sum), ".sum")
+    names(within_sum) <- paste0(prefix_out, ".", names(within_sum), ".sum")
     df <- cbind(df, within_sum)
   }
   if ("count" %in% out_values) {
     within_n <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(!is.na(x)))[-1]
-    names(within_n) <- paste0(id, ".", names(within_n), ".n")
+    names(within_n) <- paste0(prefix_out, ".", names(within_n), ".n")
     df <- cbind(df, within_n)
   }
   if ("missing" %in% out_values) {
     within_na <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(is.na(x)))[-1]
-    names(within_na) <- paste0(id, ".", names(within_na), ".na")
+    names(within_na) <- paste0(prefix_out, ".", names(within_na), ".na")
     df <- cbind(df, within_na)
   }
   if ("max" %in% out_values) {
     within_max <- aggregate(data[, compute_var], list(data[,id]), function(x) max(x, na.rm = TRUE))[-1]
-    names(within_max) <- paste0(id, ".", names(within_max), ".max")
+    names(within_max) <- paste0(prefix_out, ".", names(within_max), ".max")
     df <- cbind(df, within_max)
   }
   if ("min" %in% out_values) {
     within_min <- aggregate(data[, compute_var], list(data[,id]), function(x) min(x, na.rm = TRUE))[-1]
-    names(within_min) <- paste0(id, ".", names(within_min), ".min")
+    names(within_min) <- paste0(prefix_out, ".", names(within_min), ".min")
     df <- cbind(df, within_min)
   }
   if ("true" %in% out_values) {
@@ -352,7 +358,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
       ifelse(any(x != 0), 1, 0)
     }
     within_true <- aggregate(data[, compute_var], list(data[,id]), function(x) check_0(x, na.rm = TRUE))[-1]
-    names(within_true) <- paste0(id, ".", names(within_true), ".true")
+    names(within_true) <- paste0(prefix_out, ".", names(within_true), ".true")
     df <- cbind(df, within_true)
   }
 
@@ -368,7 +374,7 @@ aggregate_df <- function(data, id, remove_var = NULL,
       cor_df <- data.frame(i = rownames(m)[row(m)[ut]],
                            j = rownames(m)[col(m)[ut]],
                            cor = t(m)[ut]) ## could add p-values here
-      names <- paste(id, cor_df[,"i"], cor_df[,"j"], "cor", sep = ".")
+      names <- paste(prefix_out, cor_df[,"i"], cor_df[,"j"], "cor", sep = ".")
       cors <- cor_df[,"cor"]
       names(cors) <- names
       cors
