@@ -4,7 +4,8 @@
 \alias{gather_one}
 \title{Gather one variable set from wide to long}
 \usage{
-gather_one(data, key_vars, varying, keep_others = FALSE, new_name = NULL)
+gather_one(data, key_vars, varying, keep_others = FALSE, new_name = NULL,
+  show_origin = FALSE)
 }
 \arguments{
 \item{data}{The data frame that contains the variables}
@@ -16,6 +17,8 @@ gather_one(data, key_vars, varying, keep_others = FALSE, new_name = NULL)
 \item{keep_others}{If \code{TRUE}, all other variables of the data frame are kept as well and stacked in the long format}
 
 \item{new_name}{The new name of the stacked variable in the long format}
+
+\item{show_origin}{Logical, if \code{TRUE}, and additional variable will be created showing from which variables the values originated. Default is to \code{FALSE}.}
 }
 \value{
 Returns a data frame in long format

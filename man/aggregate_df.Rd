@@ -41,5 +41,7 @@ This function allows the computation of some summary statistics within groups/pe
 \examples{
 df <- aggregate_df(wide_example_data, id="id")
 head(df)
+data <- ssd.day
+id = "PAR.ID"
 }
 

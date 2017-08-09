@@ -67,13 +67,14 @@ generate_stems <- function(strings, search = "\\d+$"){
 #' @param varying The variables that vary and should be stacked in the long format
 #' @param keep_others If \code{TRUE}, all other variables of the data frame are kept as well and stacked in the long format
 #' @param new_name The new name of the stacked variable in the long format
+#' @param show_origin Logical, if \code{TRUE}, and additional variable will be created showing from which variables the values originated. Default is to \code{FALSE}.
 #'
 #' @return Returns a data frame in long format
 #' @export
 #'
 #' @examples
 #' gather_one(data=wide_example_data, key_vars = "id", varying = c("var_p_1", "var_p_2"), new_name = "var")
-gather_one <- function(data, key_vars, varying, keep_others = FALSE, new_name = NULL){
+gather_one <- function(data, key_vars, varying, keep_others = FALSE, new_name = NULL, show_origin = FALSE){
   if (is.null(new_name)) {
     new_name <- generate_stems(varying)
   }
@@ -86,7 +87,9 @@ gather_one <- function(data, key_vars, varying, keep_others = FALSE, new_name = 
                              key_col = "group_id",
                              value_col = new_name,
                              gather_cols = gather_var)
-  gathered$group_id <- NULL
+  if (show_origin) {
+    gathered$group_id <- NULL
+  }
   gathered
 }
 

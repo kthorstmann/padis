@@ -74,6 +74,10 @@ To get more information on the use of regular expressions, see `?base::regex`.
 
 gather_df <- gather_one(data=data, key_vars="id", varying = c("var_p_1", "var_p_2"), new_name="var")
 head(gather_df)
+# sort by id to make it visible
+newdata <- gather_df[order(gather_df$id),] 
+head(newdata, 20)
+
 
 ```
 
@@ -180,8 +184,11 @@ This function searches for two items that have the same stem but end on two diff
 
 library(padis)
 data <- imaginer_example_data
+data$random <- 2
 head(data)
-match_ir(data, var_stem="PSP1.variable")
+names <- match_ir(data, var_stem = "PSP1.variable")
+data[names]
+
 
 ```
 
@@ -197,8 +204,19 @@ The first variable with the *.r* at the end, e.g. *PSP1.variable.r*, and the sec
 ```{r imaginer}
 
 data <- imaginer_example_data
+data$PSP1.variable.r[!is.na(data$PSP1.variable.r)] <- 1
+data$PSP1.variable.r[is.na(data$PSP1.variable.r)] <- 0
+data$PSP1.variable.i[!is.na(data$PSP1.variable.i)] <- 1
+data$PSP1.variable.i[is.na(data$PSP1.variable.i)] <- 0
+
+data$PSP1.variable.i + data$PSP1.variable.r
+
+head(data)
 return_df <- imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE)
 head(return_df, 10)
+
+# check if it is zero or 1
+# 
 
 ```
 
@@ -305,7 +323,7 @@ transform_data(data_dy, data_in, overwrite=TRUE)
 
 
 
-## Example
+## Example for specific data sets 
 
 
 ```{r }
@@ -363,9 +381,56 @@ str(ssd.day)
 # ok problem only missing data 
 is.na(mean(c(NA, NA, NA), na.rm = TRUE))
 
-warnings()
-max(1)
+
+
 ```
+
+
+# match items 
+
+```{r}
+
+ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData.csv")
+head(ssd.day)
+data <- ssd.day
+names <- names(data)
+names
+library(stringr)
+r_variables <- grep(x = names, pattern = "\\.r$", value = TRUE)
+i_variables <- grep(x = names, pattern = "\\.i$", value = TRUE)
+
+r_stems <- str_replace(r_variables, "\\.r$", "")
+i_stems <- str_replace(i_variables, "\\.i$", "")
+stems <- intersect(r_stems, i_stems)
+
+# any(na.omit(data[, "Issue2.PSP16.select.i"]) > 0)
+
+stem <- stems[1]
+sum_i_r <- function(stem, data){
+  r_var <- paste0(stem, ".r")
+  i_var <- paste0(stem, ".i")
+  
+  if (any(is.na(data[,i_var])) ) {warning(i_var, " contains missing data - please check")}
+  if (any(is.na(data[,r_var])) ) {warning(r_var, " contains missing data - please check")}
+  out <- rowSums(data[,c(r_var, i_var)], na.rm = FALSE)
+  if (any(na.omit(out) > 1 | na.omit(out) < 0)) {warning ("the result contains numbers other than 0 or 1")}
+  return(out)
+}
+sum_i_r(stems[3], data)
+
+library(purrr)
+
+out_sums <- map(stems, ~ sum_i_r(., data))
+names(out_sums) <- stems
+data.frame(out_sums)
+new_data <- cbind(data, out_sums)
+head(new_data)
+
+# write.csv(new_data, "/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData_irsummed.csv", row.names=FALSE)
+
+```
+
+
 
 
 
