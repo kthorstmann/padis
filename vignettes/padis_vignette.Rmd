@@ -361,7 +361,7 @@ head(ssd.day)
 str(ssd.day)
 
 # ok problem only missing data 
-max(c(NA, NA, NA), na.rm = TRUE)
+is.na(mean(c(NA, NA, NA), na.rm = TRUE))
 
 warnings()
 max(1)
