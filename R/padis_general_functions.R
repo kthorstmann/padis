@@ -269,11 +269,12 @@ fac_to_chr <- function(data){
 #' @examples
 #' df <- aggregate_df(wide_example_data, id="id")
 #' head(df)
+#' data <- ssd.day
+#' id = "PAR.ID"
 aggregate_df <- function(data, id, remove_var = NULL,
                          prefix_out = NULL,
                          intake_var = NULL,
                          out_values = c("mean", "sd", "count", "sum", "missing", "cor", "min", "max", "true")){
-
 
   stopifnot(is.character(id))
   stopifnot(is.character(intake_var) || is.null(intake_var))
@@ -281,14 +282,13 @@ aggregate_df <- function(data, id, remove_var = NULL,
 
   if (is.null(prefix_out)) {prefix_out <- id}
 
-
   if (is.null(intake_var)) {
     compute_var <- setdiff(names(data), c(id, remove_var))
   } else {
     compute_var <- intake_var
   }
 
-  data <- padis::fac_to_chr(data[compute_var])
+  data <- padis::fac_to_chr(data[c(id,compute_var)])
 
   ## check that there are only numerics in the data frame
   i <- sapply(data[compute_var], is.numeric)
@@ -343,12 +343,14 @@ aggregate_df <- function(data, id, remove_var = NULL,
     df <- cbind(df, within_na)
   }
   if ("max" %in% out_values) {
-    within_max <- aggregate(data[, compute_var], list(data[,id]), function(x) max(x, na.rm = TRUE))[-1]
+    max_na <- function(x){ ifelse(all(is.na(x)), NA, max(x, na.rm = TRUE))}
+    within_max <- aggregate(data[, compute_var], list(data[,id]), function(x) max_na(x))[-1]
     names(within_max) <- paste0(prefix_out, ".", names(within_max), ".max")
     df <- cbind(df, within_max)
   }
   if ("min" %in% out_values) {
-    within_min <- aggregate(data[, compute_var], list(data[,id]), function(x) min(x, na.rm = TRUE))[-1]
+    min_na <- function(x){ ifelse(all(is.na(x)), NA, min(x, na.rm = TRUE))}
+    within_min <- aggregate(data[, compute_var], list(data[,id]), function(x) min_na(x))[-1]
     names(within_min) <- paste0(prefix_out, ".", names(within_min), ".min")
     df <- cbind(df, within_min)
   }
