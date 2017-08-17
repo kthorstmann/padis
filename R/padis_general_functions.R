@@ -323,48 +323,59 @@ aggregate_df <- function(data, id, remove_var = NULL,
   if ("mean" %in% out_values) {
     within_mean <- aggregate(data[, compute_var], list(data[,id]), function(x) mean(x, na.rm = TRUE))[-1]
     names(within_mean) <- paste0(prefix_out, ".", names(within_mean), ".mean")
-    df <- cbind(df, within_mean)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("sd" %in% out_values) {
     within_sd <- aggregate(data[, compute_var], list(data[,id]), function(x) sd(x, na.rm = TRUE))[-1]
     names(within_sd) <- paste0(prefix_out, ".", names(within_sd), ".sd")
-    df <- cbind(df, within_sd)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("sum" %in% out_values) {
     within_sum <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(x, na.rm = TRUE))[-1]
     names(within_sum) <- paste0(prefix_out, ".", names(within_sum), ".sum")
-    df <- cbind(df, within_sum)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("count" %in% out_values) {
     within_n <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(!is.na(x)))[-1]
     names(within_n) <- paste0(prefix_out, ".", names(within_n), ".n")
-    df <- cbind(df, within_n)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("missing" %in% out_values) {
     within_na <- aggregate(data[, compute_var], list(data[,id]), function(x) sum(is.na(x)))[-1]
     names(within_na) <- paste0(prefix_out, ".", names(within_na), ".na")
-    df <- cbind(df, within_na)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("max" %in% out_values) {
     max_na <- function(x){ ifelse(all(is.na(x)), NA, max(x, na.rm = TRUE))}
     within_max <- aggregate(data[, compute_var], list(data[,id]), function(x) max_na(x))[-1]
     names(within_max) <- paste0(prefix_out, ".", names(within_max), ".max")
-    df <- cbind(df, within_max)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("min" %in% out_values) {
     min_na <- function(x){ ifelse(all(is.na(x)), NA, min(x, na.rm = TRUE))}
     within_min <- aggregate(data[, compute_var], list(data[,id]), function(x) min_na(x))[-1]
     names(within_min) <- paste0(prefix_out, ".", names(within_min), ".min")
-    df <- cbind(df, within_min)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
   if ("true" %in% out_values) {
+
+    # apply(sub, 2, function(x) check_0(x, na.rm = TRUE))
+    # aggregate(data[, compute_var], list(data[,id]), function(x) check_0(x, na.rm = TRUE))[-1]
     check_0 <- function(x, na.rm = TRUE){
       if (na.rm) x <- na.omit(x)
       ifelse(any(x != 0), 1, 0)
     }
-    within_true <- aggregate(data[, compute_var], list(data[,id]), function(x) check_0(x, na.rm = TRUE))[-1]
+    within_true <- aggregate(data[, compute_var], list(data[,id]), function(x) check_0(x, na.rm = TRUE))
     names(within_true) <- paste0(prefix_out, ".", names(within_true), ".true")
-    df <- cbind(df, within_true)
+    data.table::setnames(within_true, old = paste0(prefix_out, ".Group.1.true"), new = id)
+    df <- merge(df, within_true, by = id)
   }
 
 

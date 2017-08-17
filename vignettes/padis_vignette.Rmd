@@ -94,7 +94,7 @@ swap_char("this.string", ".", "_")
 
 ### gather_multiple
 
-Similar to `gather_one`, `gather_multiple` turns several variables from a wide data frame into a long data frame. Several `key_vars` can be added, however, the new names of the resulting variables should be changed manually. The varying object should be set to NULL, and pererably all variables that should not be turned into th long format should be removed before applying this function.
+Similar to `gather_one`, `gather_multiple` turns several variables from a wide data frame into a long data frame. Several `key_vars` can be added, however, the new names of the resulting variables should be changed manually. The varying object should be set to NULL, and preferably all variables that should not be turned into th long format should be removed before applying this function.
 
 
 ```{r gather_multiple}
@@ -307,8 +307,11 @@ head(data_in, 3)
 
 ```{r get_selection_long}
 library(padis)
+
 selection_long <- get_selection_long(data_dy)
 head(selection_long, 3)
+
+
 
 ```
 
@@ -319,6 +322,8 @@ head(selection_long, 3)
 ```{r transform data}
 # the results will now appear (in the default mode) in the workspace
 transform_data(data_dy, data_in, overwrite=TRUE)
+
+
 ```
 
 
@@ -375,14 +380,6 @@ ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboratio
 ssd.agg.day <- aggregate_df(ssd.day, id="PAR.ID", out_values="max")
 
 
-head(ssd.day)
-str(ssd.day)
-
-# ok problem only missing data 
-is.na(mean(c(NA, NA, NA), na.rm = TRUE))
-
-
-
 ```
 
 
@@ -431,8 +428,103 @@ head(new_data)
 ```
 
 
+## Gather multiple 
+
+```{r }
+
+data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData2.csv")
+head(data)
+gather_mtpl_df <- gather_multiple(data=data, key_vars=c("Day_UniqueID", "PAR_ID", "Day_Num"), varying = NULL, search = "\\d")
 
 
 
+## change the function so that it can detect numbers in the middle as well
+# not sure what should have happened here
+function(data, key_vars, varying = NULL, search = "Issue\\d_"){
+  stopifnot(is.data.frame(data))
+  if (is.null(varying)){
+    all_names <- names(data)
+    varying <- setdiff(all_names, key_vars)
+  }
+  stems <- generate_stems(varying, search = search)
+  varying_list <- purrr::map(stems, ~ grep(x=varying, pattern=., value = TRUE))
+  long_list <- purrr::map2(varying_list, stems, ~ gather_one(data=data, key_vars = key_vars,
+                                                             varying=.x, new_name=.y))
+  
+  purrr::map(long_list, tail)
+  
+  long_df <- as.data.frame(long_list)
+  long_re_df <- long_df[c(key_vars, stems)]
+  long_re_df
+}
+
+## add this as error messages
+
+head(long_re_df, 100)
+any(table(data$Day_UniqueID) != 1)
+which(table(long_re_df$Day_UniqueID) > 2)
+
+sum(table(long_re_df$Day_UniqueID) == 2)
+sum(table(long_re_df$Day_UniqueID) == 4)
+table(long_re_df$Day_UniqueID)["290.1"]
+head(data)
+
+```
+
+
+## Example regex
+
+```{r regex}
+
+# for help for regex, see:
+?regex
+names <- names(data)
+## all containing 'Is'
+grep( x = names, pattern = "Is", value = TRUE)
+
+## all containing any number
+grep( x = names, pattern = "[0-9]", value = TRUE)
+
+## all containing '1'
+grep( x = names, pattern = "1", value = TRUE)
+
+## all containing 'd'
+grep( x = names, pattern = "D", value = TRUE)
+
+## all containing 'd' at the end
+grep( x = names, pattern = "D$", value = TRUE)
+
+## all containing 'd' at the beginning
+grep( x = names, pattern = "^D", value = TRUE)
+
+## Issue at the beginning and Bad at the end
+grep( x = names, pattern = "Issue.+.Bad", value = TRUE) #.+. = anything inbetween
+
+data <- cbind(data[4], data)
+data[c(1, 3:4)]
+
+
+
+
+```
+
+## Example: aggregate_df
+
+```{r example aggregate df}
+
+library(padis)
+data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_6/SelectionLevel.no16 test.csv")
+
+ssd.agg.slct <- aggregate_df(data, id="Issue.UniqueID", intake_var=c("Sought.Mother", "Sought.Father", "Sought.Partner", "Sought.BestFriend", "Sought.Attach.c7","Sought.NonAttach.c7","Sought.Attach","Sought.NonAttach"), out_values="true")
+head(ssd.agg.slct)
+
+# check input
+subset(data, Issue.UniqueID == 111805)
+# check output
+subset(ssd.agg.slct, Issue.UniqueID == 111805)
+
+
+
+```
 
 
