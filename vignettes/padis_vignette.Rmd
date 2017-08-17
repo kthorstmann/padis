@@ -2,7 +2,12 @@
 title: "PADIS vignette"
 author: "Kai T. Horstmann"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  html_document:
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    toc_float: yes
 ---
 
 # Introduction
@@ -141,7 +146,7 @@ wide_with_missings[sample(1:nrow(wide_with_missings), 10),"var_p_1"] <- NA
 
 df <- aggregate_df(wide_with_missings, id="id", 
                    intake_var=c("var_p_1", "var_p_2"))
-
+head(df, 2)
 
 ```
 
@@ -181,13 +186,14 @@ This function searches for two items that have the same stem but end on two diff
 
 ```{r match_ir}
 
-
 library(padis)
+# get example data
 data <- imaginer_example_data
+# add a random variable, here 2
 data$random <- 2
 head(data)
 names <- match_ir(data, var_stem = "PSP1.variable")
-data[names]
+data[1:10, names] # select the matched variables
 
 
 ```
@@ -215,11 +221,11 @@ head(data)
 return_df <- imaginer(data, var_stem="PSP1.variable.", return_complete_data=TRUE)
 head(return_df, 10)
 
-# check if it is zero or 1
-# 
 
 ```
 
+
+<!-- comment here was still something to be done, i. e. with the NAs -->
 
 ### merge_multiple_df
 
@@ -269,7 +275,7 @@ If variables need to selected first, use the function `select_vars` to select va
 
 ```{r example select, eval = FALSE, echo = TRUE}
 
-select_df <- padis::select_vars(data=data, ids="PAR.ID", prefix="the_prefix_of_the_variables")
+select_df <- padis::select_vars(data=data, ids="PAR.ID", prefix="the_prefix_of_the_variables") # function is not run, this would cause an error
 
 ```
 
@@ -299,6 +305,7 @@ data_in <- xlsx::read.xlsx("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96colla
 
 head(data_dy, 3)
 head(data_in, 3)
+
 ```
 
 
@@ -306,12 +313,10 @@ head(data_in, 3)
 
 
 ```{r get_selection_long}
-library(padis)
 
+library(padis)
 selection_long <- get_selection_long(data_dy)
 head(selection_long, 3)
-
-
 
 ```
 
@@ -323,13 +328,15 @@ head(selection_long, 3)
 # the results will now appear (in the default mode) in the workspace
 transform_data(data_dy, data_in, overwrite=TRUE)
 
-
 ```
 
 
 
 ## Example for specific data sets 
 
+### Example: imaginer for several variables
+
+This is how one could run the imaginer function over several variables at once, using a loop.
 
 ```{r }
 
@@ -343,49 +350,27 @@ head(return_df)
 
 
 ## if you want to do this now for every variable, do:
-names_data <- names(data)## get the names
+names_data <- names(data) ## get the names of the data sets
 issue_vars <- grep(x = names_data, pattern = "Issue+.+i$", value = TRUE) ## get the names that end with .i
-stems <- stringr::str_replace_all(issue_vars, ".i$", "") ## replace the .i with nothing
+stems <- stringr::str_replace_all(issue_vars, ".i$", "") ## replace the .i with nothing to generate the stems that we will be looking for
 
 list <- list()
-
-for (i in seq_along(stems)) { ## a for loop
+for (i in seq_along(stems)) { ## a for loop, to apply the function to each stem that was detected beforehand
   list[[i]] <- imaginer(data, var_stem=stems[i], return_complete_data=FALSE)
 }
 purrr::map(list, head)
 
 ```
 
-### Working with lists
-
-Wotking with lists makes things easier, because multiple data frames can be used at the same time.
-
-```{r examples lists}
-
-## get the head of each data frame in the list object list
-purrr::map(data_list, head)
-
-## get the head of each data frame in the list object list
-purrr::map(data_list, psych::describe)
-
-## or make your own function
-purrr::map(data_list, function(x) {x + 1}) # in this case add one two each variable. If the variable is not numerical, then there is a Warning (and in this case, Missings arise)
-
-```
-
-```{r example day level data, eval = FALSE, echo = FALSE}
-
-ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_4/DayLevel 17.08.01.csv")
-
-ssd.agg.day <- aggregate_df(ssd.day, id="PAR.ID", out_values="max")
 
 
-```
+### Example: match items 
 
+**August 17th, this has to be updated in the package**
 
-# match items 
+```{r, eval = FALSE, echo = TRUE}
 
-```{r}
+## this example is not run, because it does not work properly yet
 
 ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData.csv")
 head(ssd.day)
@@ -428,51 +413,118 @@ head(new_data)
 ```
 
 
-## Gather multiple 
+### Example: Gather multiple 
 
-```{r }
+```{r eval = FALSE, echo = FALSE}
+
+# data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData2.csv")
+# head(data)
+# gather_mtpl_df <- gather_multiple(data=data, key_vars=c("Day_UniqueID", "PAR_ID", "Day_Num"), varying = NULL, search = "\\d")
+# 
+# 
+# ## change the function so that it can detect numbers in the middle as well in the variable names
+# names(data)
+# function(data, key_vars, varying = NULL, search = "Issue\\d_"){
+#   stopifnot(is.data.frame(data))
+#   if (is.null(varying)){
+#     all_names <- names(data)
+#     varying <- setdiff(all_names, key_vars)
+#   }
+#   stems <- generate_stems(varying, search = search)
+#   varying_list <- purrr::map(stems, ~ grep(x=varying, pattern=., value = TRUE))
+#   long_list <- purrr::map2(varying_list, stems, ~ gather_one(data=data, key_vars = key_vars,
+#                                                              varying=.x, new_name=.y))
+#   
+#   purrr::map(long_list, tail)
+#   
+#   long_df <- as.data.frame(long_list)
+#   long_re_df <- long_df[c(key_vars, stems)]
+#   long_re_df
+# }
+# 
+# ## add this as error messages
+# 
+# head(long_re_df, 100)
+# any(table(data$Day_UniqueID) != 1)
+# which(table(long_re_df$Day_UniqueID) > 2)
+# 
+# sum(table(long_re_df$Day_UniqueID) == 2)
+# sum(table(long_re_df$Day_UniqueID) == 4)
+# table(long_re_df$Day_UniqueID)["290.1"]
+# head(data)
+
+
+```
+
+From the e-mail:
+
+*If I have a dataset with these variable names: PAR.ID, PSP1.close, PSP2.close, PSP1.freq, PSP2.freq and I want to stack the variables, how does the function know to stack the two close variables on top of each other and the two freq variables on top of each other? I didn't see anything in the arguments in the vignette that would tell the function which variables to stack. That could be one of the things we changed in our meeting and I'm just fuzzy on the details of how the new way works. Or maybe I forgot to bring it up.*
+
+In this case, the function would need as `search` argument `"PSP\\d."`, searching for each string that has "PSP*somenumber*." The function does not work if the common elements are in the middle of the string (like "somenumber*_PSP_*number*_freq").
+
+```{r gather multiple example}
+
 
 data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData2.csv")
 head(data)
-gather_mtpl_df <- gather_multiple(data=data, key_vars=c("Day_UniqueID", "PAR_ID", "Day_Num"), varying = NULL, search = "\\d")
-
-
-
-## change the function so that it can detect numbers in the middle as well
-# not sure what should have happened here
-function(data, key_vars, varying = NULL, search = "Issue\\d_"){
-  stopifnot(is.data.frame(data))
-  if (is.null(varying)){
-    all_names <- names(data)
-    varying <- setdiff(all_names, key_vars)
-  }
-  stems <- generate_stems(varying, search = search)
-  varying_list <- purrr::map(stems, ~ grep(x=varying, pattern=., value = TRUE))
-  long_list <- purrr::map2(varying_list, stems, ~ gather_one(data=data, key_vars = key_vars,
-                                                             varying=.x, new_name=.y))
-  
-  purrr::map(long_list, tail)
-  
-  long_df <- as.data.frame(long_list)
-  long_re_df <- long_df[c(key_vars, stems)]
-  long_re_df
-}
-
-## add this as error messages
-
-head(long_re_df, 100)
-any(table(data$Day_UniqueID) != 1)
-which(table(long_re_df$Day_UniqueID) > 2)
-
-sum(table(long_re_df$Day_UniqueID) == 2)
-sum(table(long_re_df$Day_UniqueID) == 4)
-table(long_re_df$Day_UniqueID)["290.1"]
-head(data)
+gather_mtpl_df <- gather_multiple(data=data, key_vars=c("Day_UniqueID", "PAR_ID", "Day_Num"), varying = NULL, search = "Issue\\d_")
+head(gather_mtpl_df)
 
 ```
 
 
-## Example regex
+
+### Example: aggregate_df
+
+```{r example aggregate df}
+
+library(padis)
+data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_6/SelectionLevel.no16 test.csv")
+
+ssd.agg.slct <- aggregate_df(data, id="Issue.UniqueID", intake_var=c("Sought.Mother", "Sought.Father", "Sought.Partner", "Sought.BestFriend", "Sought.Attach.c7","Sought.NonAttach.c7","Sought.Attach","Sought.NonAttach"), out_values="true")
+head(ssd.agg.slct)
+
+
+# check input
+subset(data, Issue.UniqueID == 111805)
+# check output
+subset(ssd.agg.slct, Issue.UniqueID == 111805)
+
+
+
+
+```
+
+#### aggregate_df, second example
+
+```{r example day level data, eval = FALSE, echo = FALSE}
+
+ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_4/DayLevel 17.08.01.csv")
+ssd.agg.day <- aggregate_df(ssd.day, id="PAR.ID", out_values="max")
+head(ssd.agg.day, 3)
+
+```
+
+
+### Working with lists
+
+Wotking with lists makes things easier, because multiple data frames can be used at the same time.
+
+```{r examples lists}
+
+## get the head of each data frame in the list object list
+purrr::map(data_list, head)
+
+## get the head of each data frame in the list object list
+purrr::map(data_list, psych::describe)
+
+## or make your own function
+purrr::map(data_list, function(x) {x + 1}) # in this case add one two each variable. If the variable is not numerical, then there is a Warning (and in this case, Missings arise)
+
+```
+
+
+### Example regex
 
 ```{r regex}
 
@@ -503,25 +555,6 @@ grep( x = names, pattern = "Issue.+.Bad", value = TRUE) #.+. = anything inbetwee
 data <- cbind(data[4], data)
 data[c(1, 3:4)]
 
-
-
-
-```
-
-## Example: aggregate_df
-
-```{r example aggregate df}
-
-library(padis)
-data <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_6/SelectionLevel.no16 test.csv")
-
-ssd.agg.slct <- aggregate_df(data, id="Issue.UniqueID", intake_var=c("Sought.Mother", "Sought.Father", "Sought.Partner", "Sought.BestFriend", "Sought.Attach.c7","Sought.NonAttach.c7","Sought.Attach","Sought.NonAttach"), out_values="true")
-head(ssd.agg.slct)
-
-# check input
-subset(data, Issue.UniqueID == 111805)
-# check output
-subset(ssd.agg.slct, Issue.UniqueID == 111805)
 
 
 
