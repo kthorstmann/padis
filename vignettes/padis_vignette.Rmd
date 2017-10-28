@@ -331,6 +331,38 @@ transform_data(data_dy, data_in, overwrite=TRUE)
 ```
 
 
+### next_day
+
+- function goes throug each `id` and a corresponding `days_in` var
+- checks per id if the corresponding days_in var has consecutive variables
+- each entry that has one "one-lower" match is flagged and all corresponding values from another set of `variables` are extracted
+- The new variables get the `prefix` "N"
+
+```{r}
+
+
+library(padis)
+data <- next_day_data
+next_day(data)
+
+```
+
+
+### real_imagined
+
+For the Real.Imagined Function, I want the function to identify all the pairs of variables with matching names except for a .r or .i suffix and create new variables for all of them with a .c suffix.	
+
+- The variable pairs will all have either an NA and a number, or a NA and an NA. The new .c variable will have a number if a number was present, otherwise it will be an NA.
+- We don't need the indicator variable for whether the .c variable was from the .r or .i variable, as we discussed. 
+- There should be an error if both vars in a pair have a number. The sheet has a couple of those.
+
+```{r real_imagined}
+
+library(padis)
+real_imagined(real_imagined_data, ignore_double=TRUE)
+
+```
+
 
 ## Example for specific data sets 
 
@@ -362,55 +394,6 @@ purrr::map(list, head)
 
 ```
 
-
-
-### Example: match items 
-
-**August 17th, this has to be updated in the package**
-
-```{r, eval = FALSE, echo = TRUE}
-
-## this example is not run, because it does not work properly yet
-
-ssd.day <- read.csv("/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData.csv")
-head(ssd.day)
-data <- ssd.day
-names <- names(data)
-names
-library(stringr)
-r_variables <- grep(x = names, pattern = "\\.r$", value = TRUE)
-i_variables <- grep(x = names, pattern = "\\.i$", value = TRUE)
-
-r_stems <- str_replace(r_variables, "\\.r$", "")
-i_stems <- str_replace(i_variables, "\\.i$", "")
-stems <- intersect(r_stems, i_stems)
-
-# any(na.omit(data[, "Issue2.PSP16.select.i"]) > 0)
-
-stem <- stems[1]
-sum_i_r <- function(stem, data){
-  r_var <- paste0(stem, ".r")
-  i_var <- paste0(stem, ".i")
-  
-  if (any(is.na(data[,i_var])) ) {warning(i_var, " contains missing data - please check")}
-  if (any(is.na(data[,r_var])) ) {warning(r_var, " contains missing data - please check")}
-  out <- rowSums(data[,c(r_var, i_var)], na.rm = FALSE)
-  if (any(na.omit(out) > 1 | na.omit(out) < 0)) {warning ("the result contains numbers other than 0 or 1")}
-  return(out)
-}
-sum_i_r(stems[3], data)
-
-library(purrr)
-
-out_sums <- map(stems, ~ sum_i_r(., data))
-names(out_sums) <- stems
-data.frame(out_sums)
-new_data <- cbind(data, out_sums)
-head(new_data)
-
-# write.csv(new_data, "/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_5/SSD.PracticeWideData_irsummed.csv", row.names=FALSE)
-
-```
 
 
 ### Example: Gather multiple 

@@ -223,3 +223,126 @@ transform_data <- function(daily_data, intake_data, write_to = "workspace", over
 }
 
 
+
+
+
+#' Transform Diary Data and Create a Next Day Variable
+#'
+#' The function follows following rule: First, it treats each \code{id} separately. It then looks in the column \code{days_in} for each numeric value \code{x} that has a preceding lower value \code{y} with a difference of \code{x - y = 1} (e.g. if there is a 4, it searches for a 3). If it finds a preceding value \code{y} that is one smaller than the initial value \code{x}, it returns corresponding row-wise values from the columns \code{variables} and stores them as in a new variable.
+#'
+#' @param data The data frame that contains the variable
+#' @param id The ID variable of the participants
+#' @param days_in The variable identifying the day of each measurement. Must be numeric
+#' @param variables The variables that should be transformed to a next day variable
+#' @param prefix The prefix that is added to the names of the transformed variables. Default is "N"
+#'
+#' @return Returns a data frame with the original variables as well as the transformed variables.
+#' @export
+#'
+#' @examples
+#' data <- next_day_data
+#' next_day(data)
+next_day <- function(data,
+                     id = "PAR.ID",
+                     days_in = "Day.DaysIn",
+                     variables = c("Day.Wellbeing", "Day.Closeness"),
+                     prefix = "N") {
+
+  stopifnot(is.numeric(data[,days_in]))
+  df_list <- split(x=data, f = data[id])
+  wrap_list <- function(x){
+    v <- x[,days_in]
+    stopifnot(is.numeric(v))
+    if (any(table(v) > 1)) {
+      stop("There are non-unique values in ", days_in, ". Please check. Each day must be unique")
+    }
+    wrap_vars <- function(variable){
+      return_prev <- function(y){
+        if (is.na(y)) {
+          out <- NA
+        } else
+          if ((y - 1) %in% v) {
+            take <- (y - 1) == v
+            take[is.na(take)] <- FALSE
+            out <- x[take, variable]
+          } else {
+            out <- NA
+          }
+        out
+      }
+      return_values <- sapply(v, return_prev)
+      df <- data.frame(return_values)
+      if (ncol(df) != 1) {
+        "Something went wrong - please check your input data frame. Maybe non-unique IDs or days?"
+      }
+      names(df) <- paste0(prefix, variable)
+      df
+    }
+    df_transformed <- data.frame(purrr::map(variables, wrap_vars))
+    x_out <- cbind(x, df_transformed)
+    x_out
+  }
+  df_list_transformed <- purrr::map(df_list, wrap_list)
+  df_out_transformed <- do.call("rbind", df_list_transformed)
+  rownames(df_out_transformed) <- rownames(data)
+  return(df_out_transformed)
+}
+
+
+#' Combine .r and .i Pairs into a .c Variable
+#'
+#' @param data The data frame that contains the .r and .i variable pairs.
+#' @param ignore_double logical. If set to TRUE, cases in which both .i and .r contain values will be ignored and NA will be defined to the .c variable. Default is to \code{FALSE}
+#' @param combine_data logical. If set to TRUE, the original data frame will be combined with the new data frame. Default is to \code{TRUE}
+#'
+#' @return Returns a data frame with a combined variable .c, which contains the values of the .i and .r variables.
+#' @export
+#'
+#' @examples
+#' real_imagined(real_imagined_data)
+#' real_imagined(real_imagined_data, ignore_double = TRUE)
+#' real_imagined(real_imagined_data, ignore_double = TRUE, combine_data=FALSE)
+real_imagined <- function(data, ignore_double = FALSE, combine_data = TRUE){
+  data_names <- names(data)
+  r_variables <- grep(x = data_names, pattern = "\\.r$", value = TRUE)
+  i_variables <- grep(x = data_names, pattern = "\\.i$", value = TRUE)
+  r_stems <- stringr::str_replace(r_variables, "\\.r$", "")
+  i_stems <- stringr::str_replace(i_variables, "\\.i$", "")
+  stems <- intersect(r_stems, i_stems)
+
+  combine_i_r <- function(stem, data, ignore_double = FALSE){
+    r_var <- paste0(stem, ".r")
+    i_var <- paste0(stem, ".i")
+
+    # throw error if both variables have a value, and not one of them has NA
+    count_na <- function(x){ sum(is.na(x))}
+    pair_data <- data[,c(r_var, i_var)]
+    na_per_pair <- apply(pair_data, 1, count_na)
+
+    if (!ignore_double) {
+      if (any(na_per_pair == 0)) {
+        stop("The item-pair ", stem, " (-.i and -.r) contains rows where both variables have non-missing values. \n Please check this variable. \n You can also set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable.")
+      }
+    } else {
+      if (any(na_per_pair == 0)) { warning("The item-pair ", stem, " (-.i and -.r) contains rows where both variables have non-missing values. \n You can set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable. Nevertheless, please check.")}
+      pair_data[na_per_pair == 0, ] <- NA
+    }
+    out <- rowMeans(pair_data, na.rm = TRUE)
+    out[is.na(out)] <- NA
+    out_df <- data.frame(out)
+    colnames(out_df) <- paste0(stem, ".c")
+    return(out_df)
+  }
+  out_df_list <- purrr::map(stems, ~ combine_i_r(., data, ignore_double = ignore_double))
+  out_c_df <- data.frame(out_df_list)
+  if (combine_data) {
+    data_out <- cbind(data, out_c_df)
+  } else {
+    data_out <- out_c_df
+  }
+  return(data_out)
+}
+
+
+
+
