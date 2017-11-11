@@ -7,7 +7,7 @@
 real_imagined(data, ignore_double = FALSE, combine_data = TRUE)
 }
 \arguments{
-\item{data}{The data frame that contains the .r and .i variable pairs.}
+\item{data}{The data frame that contains the .r and .i variable pairs. The function handles characters and numerics, but not factors.}
 
 \item{ignore_double}{logical. If set to TRUE, cases in which both .i and .r contain values will be ignored and NA will be defined to the .c variable. Default is to \code{FALSE}}
 

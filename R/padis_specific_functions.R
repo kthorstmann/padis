@@ -291,7 +291,7 @@ next_day <- function(data,
 
 #' Combine .r and .i Pairs into a .c Variable
 #'
-#' @param data The data frame that contains the .r and .i variable pairs.
+#' @param data The data frame that contains the .r and .i variable pairs. The function handles characters and numerics, but not factors.
 #' @param ignore_double logical. If set to TRUE, cases in which both .i and .r contain values will be ignored and NA will be defined to the .c variable. Default is to \code{FALSE}
 #' @param combine_data logical. If set to TRUE, the original data frame will be combined with the new data frame. Default is to \code{TRUE}
 #'
@@ -303,6 +303,7 @@ next_day <- function(data,
 #' real_imagined(real_imagined_data, ignore_double = TRUE)
 #' real_imagined(real_imagined_data, ignore_double = TRUE, combine_data=FALSE)
 real_imagined <- function(data, ignore_double = FALSE, combine_data = TRUE){
+  if (any(sapply(data, is.factor))) {stop("data contains at least one factor. Please convert to character before proceeding")}
   data_names <- names(data)
   r_variables <- grep(x = data_names, pattern = "\\.r$", value = TRUE)
   i_variables <- grep(x = data_names, pattern = "\\.i$", value = TRUE)
@@ -315,19 +316,31 @@ real_imagined <- function(data, ignore_double = FALSE, combine_data = TRUE){
     i_var <- paste0(stem, ".i")
 
     # throw error if both variables have a value, and not one of them has NA
-    count_na <- function(x){ sum(is.na(x))}
+    count_na <- function(x){ sum(is.na(x)) }
     pair_data <- data[,c(r_var, i_var)]
+
+    # check if is character:
+    if (all(apply(pair_data, 2, is.character))) {
+      pair_data[pair_data == ""] <- NA
+      message("The item-pair ", stem, " is character. Empty values were set to NA")
+    }
+
     na_per_pair <- apply(pair_data, 1, count_na)
 
     if (!ignore_double) {
       if (any(na_per_pair == 0)) {
-        stop("The item-pair ", stem, " (-.i and -.r) contains rows where both variables have non-missing values. \n Please check this variable. \n You can also set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable.")
+        stop("The item-pair ", stem, " (-.i and -.r) contains rows where both variables have non-missing values.
+             \n Please check this variable. \n You can also set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable.")
       }
-    } else {
-      if (any(na_per_pair == 0)) { warning("The item-pair ", stem, " (-.i and -.r) contains rows where both variables have non-missing values. \n You can set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable. Nevertheless, please check.")}
-      pair_data[na_per_pair == 0, ] <- NA
-    }
-    out <- rowMeans(pair_data, na.rm = TRUE)
+      } else {
+        if (any(na_per_pair == 0)) { warning("The item-pair ", stem, " (-.i and -.r) contains rows where both variables have non-missing values. \n
+                                             The function proceeded because you set 'ignore_double' to TRUE, which will set NA for these pairs in the .c variable. Nevertheless, please check.")}
+        pair_data[na_per_pair == 0, ] <- NA
+        }
+
+    combine_rows <- function(x, y) {if (is.na(x)) {y} else if (is.na(y)) {x} else {NA}}
+    combined_values <- purrr::map2(.x=pair_data[,r_var], .y = pair_data[,i_var], .f = combine_rows)
+    out <- unlist(combined_values)
     out[is.na(out)] <- NA
     out_df <- data.frame(out)
     colnames(out_df) <- paste0(stem, ".c")
@@ -342,7 +355,6 @@ real_imagined <- function(data, ignore_double = FALSE, combine_data = TRUE){
   }
   return(data_out)
 }
-
 
 
 
