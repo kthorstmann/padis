@@ -226,27 +226,41 @@ transform_data <- function(daily_data, intake_data, write_to = "workspace", over
 
 
 
-#' Transform Diary Data and Create a Next Day Variable
+#' Transform Diary Data and Create a Next or Previous Day Variable
 #'
-#' The function follows following rule: First, it treats each \code{id} separately. It then looks in the column \code{days_in} for each numeric value \code{x} that has a preceding lower value \code{y} with a difference of \code{x - y = 1} (e.g. if there is a 4, it searches for a 3). If it finds a preceding value \code{y} that is one smaller than the initial value \code{x}, it returns corresponding row-wise values from the columns \code{variables} and stores them as in a new variable.
+#' The function follows following rule: First, it treats each \code{id} separately. It then looks in the column \code{days_in} for each numeric value \code{x} that has a preceding or follwing lower or higher value \code{y} with a difference of \code{x - y = 1} (e.g. if there is a 4, it searches for a 3 or a 5, depending on the setting of \code{next_day}). If it finds a preceding value \code{y} that is one smaller than the initial value \code{x}, it returns corresponding row-wise values from the columns \code{variables} and stores them as in a new variable.
 #'
 #' @param data The data frame that contains the variable
 #' @param id The ID variable of the participants
 #' @param days_in The variable identifying the day of each measurement. Must be numeric
 #' @param variables The variables that should be transformed to a next day variable
-#' @param prefix The prefix that is added to the names of the transformed variables. Default is "N"
+#' @param prefix The prefix that is added to the names of the transformed variables. Default is NULL, which will set the prefix accoring to the \code{next_day} argument
+#' @param next_day Logical. If \code{TRUE}, the next day is returned. If \code{FALSE}, the previous day is returned
 #'
-#' @return Returns a data frame with the original variables as well as the transformed variables.
+#'
+#' @return Returns a data frame with the original variables as well as the transformed variables
 #' @export
 #'
 #' @examples
 #' data <- next_day_data
-#' next_day(data)
-next_day <- function(data,
-                     id = "PAR.ID",
-                     days_in = "Day.DaysIn",
-                     variables = c("Day.Wellbeing", "Day.Closeness"),
-                     prefix = "N") {
+#' previous_day <- other_day(data)
+#' next_day <- other_day(data, next_day = TRUE)
+other_day <- function(data,
+                      id = "PAR.ID",
+                      days_in = "Day.DaysIn",
+                      variables = c("Day.Wellbeing", "Day.Closeness"),
+                      prefix = NULL,
+                      next_day = FALSE) {
+
+  if (is.null(prefix)) {
+    if (next_day == TRUE) {
+      prefix <- "N"
+      message ("Prefix was set automatically to N. You can overwrite this using the 'prefix' argument.")
+    } else if (next_day == FALSE) {
+      prefix <- "P"
+      message ("Prefix was set automatically to P. You can overwrite this using the 'prefix' argument.")
+    }
+  }
 
   stopifnot(is.numeric(data[,days_in]))
   df_list <- split(x=data, f = data[id])
@@ -258,11 +272,18 @@ next_day <- function(data,
     }
     wrap_vars <- function(variable){
       return_prev <- function(y){
+
+        if (next_day == TRUE) {
+          select_row <- y - 1
+        } else if (next_day == FALSE) {
+          select_row <- y + 1
+        }
+
         if (is.na(y)) {
           out <- NA
         } else
-          if ((y - 1) %in% v) {
-            take <- (y - 1) == v
+          if (select_row %in% v) {
+            take <- select_row == v
             take[is.na(take)] <- FALSE
             out <- x[take, variable]
           } else {

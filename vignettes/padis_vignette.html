@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kai T. Horstmann" />
 
-<meta name="date" content="2017-10-28" />
+<meta name="date" content="2017-11-13" />
 
 <title>PADIS vignette</title>
 
@@ -229,7 +229,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">PADIS vignette</h1>
 <h4 class="author"><em>Kai T. Horstmann</em></h4>
-<h4 class="date"><em>2017-10-28</em></h4>
+<h4 class="date"><em>2017-11-13</em></h4>
 
 </div>
 
@@ -437,17 +437,17 @@ df &lt;- aggregate_df(wide_with_missings, id=&quot;id&quot;,
 <pre><code>## The id-variable contains missings. Computation proceeded, but please check.</code></pre>
 <pre class="r"><code>head(df, 2)</code></pre>
 <pre><code>##   id id.var_p_1.mean id.var_p_2.mean id.var_p_1.sd id.var_p_2.sd
-## 1  a        5.600000         8.60000      4.335897      4.335897
-## 2  b        8.333333        10.66667      2.886751      3.055050
+## 1  a             5.6             8.6      4.335897      4.335897
+## 2  b             7.8             9.8      3.033150      4.604346
 ##   id.var_p_1.sum id.var_p_2.sum id.var_p_1.n id.var_p_2.n id.var_p_1.na
 ## 1             28             43            5            5             0
-## 2             25             32            3            3             0
+## 2             39             49            5            5             0
 ##   id.var_p_2.na id.var_p_1.max id.var_p_2.max id.var_p_1.min
 ## 1             0             10             15              1
-## 2             0             10             14              5
+## 2             0             10             14              4
 ##   id.var_p_2.min id.var_p_1.true id.var_p_2.true id.var_p_1.var_p_2.cor
 ## 1              3               1               1             -0.6755319
-## 2              8               1               1             -0.9449112</code></pre>
+## 2              3               1               1             -0.8270279</code></pre>
 <pre class="r"><code>data &lt;- read.csv(&quot;/Users/kaihorstmann/Dropbox/01Uni/01Projekte/96collaboration/Lara Kammrath/Materials/data_2/Aggregating.csv&quot;)
 df &lt;- aggregate_df(data, id=&quot;PAR.ID&quot;)</code></pre>
 <pre><code>## Warning in stats::cor(id_data[compute_var], use = &quot;pairwise.complete.obs&quot;):
@@ -924,62 +924,62 @@ data_list &lt;- merge_multiple_df(data_from = data_long_1, id_var=&quot;PAR.ID&q
 purrr::map(data_list, head)</code></pre>
 <pre><code>## [[1]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a      8    1     11
-## 2      a      8    1     11
-## 3      a      8    1     11
-## 4      b      5    2     12
-## 5      b      5    2     12
-## 6      b      5    2     12
+## 1      a      4    1     11
+## 2      a      4    1     11
+## 3      a      4    1     11
+## 4      b      6    2     12
+## 5      b      6    2     12
+## 6      b      6    2     12
 ## 
 ## [[2]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a      8   31     29
-## 2      a      8   38      4
-## 3      a      8   26     33
-## 4      a      8    7     14
-## 5      b      5   24      5
-## 6      b      5   14     27</code></pre>
+## 1      a      4   27      4
+## 2      a      4   28     22
+## 3      a      4   18      5
+## 4      a      4    7     26
+## 5      b      6   33     13
+## 6      b      6   34     36</code></pre>
 <pre class="r"><code>## merge up, i. e. make the longer data frame short first and merge then
 data_list &lt;- merge_multiple_df(data_long_1, id_var=&quot;PAR.ID&quot;, list(data_short_2, data_short_3), merge_down = FALSE, select_variables = &quot;var2&quot;)
 purrr::map(data_list, head)</code></pre>
 <pre><code>## [[1]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a      8   20     17
-## 2      b      5   12     22
-## 3      c      9    2     27
-## 4      d     10   18     31
-## 5      e      6    3     39
-## 6      f      2   19     37
+## 1      a      4   30      3
+## 2      b      6    1     31
+## 3      c      8   33     11
+## 4      d      9   39     30
+## 5      e      5    7     40
+## 6      f      1   15      6
 ## 
 ## [[2]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a      8   17      2
-## 2      b      5   28     22
-## 3      c      9   16      7
-## 4      d     10    1     23
-## 5      e      6   33      9
-## 6      f      2    9     15</code></pre>
+## 1      a      4   10      8
+## 2      b      6    8     31
+## 3      c      8   25     40
+## 4      d      9   12     22
+## 5      e      5   22     20
+## 6      f      1   11     10</code></pre>
 <pre class="r"><code>data_list &lt;- merge_multiple_df(data_long_2_er, id_var=&quot;PAR.ID&quot;, list(data_short_2, data_short_3), merge_down = FALSE, select_variables = &quot;var2&quot;)</code></pre>
 <pre><code>## Warning in merge_multiple_df(data_long_2_er, id_var = &quot;PAR.ID&quot;, list(data_short_2, : the following ids contain do not contain unique values in their variables: 
 ## a</code></pre>
 <pre class="r"><code>purrr::map(data_list, head)</code></pre>
 <pre><code>## [[1]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a     11   20     17
-## 2      a     12   20     17
-## 3      b     12   12     22
-## 4      c     13    2     27
-## 5      d     14   18     31
-## 6      e     15    3     39
+## 1      a     11   30      3
+## 2      a     12   30      3
+## 3      b     12    1     31
+## 4      c     13   33     11
+## 5      d     14   39     30
+## 6      e     15    7     40
 ## 
 ## [[2]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a     11   17      2
-## 2      a     12   17      2
-## 3      b     12   28     22
-## 4      c     13   16      7
-## 5      d     14    1     23
-## 6      e     15   33      9</code></pre>
+## 1      a     11   10      8
+## 2      a     12   10      8
+## 3      b     12    8     31
+## 4      c     13   25     40
+## 5      d     14   12     22
+## 6      e     15   22     20</code></pre>
 <p>If variables need to selected first, use the function <code>select_vars</code> to select variables from a data frame first, e.g.</p>
 <pre class="r"><code>select_df &lt;- padis::select_vars(data=data, ids=&quot;PAR.ID&quot;, prefix=&quot;the_prefix_of_the_variables&quot;) # function is not run, this would cause an error</code></pre>
 </div>
@@ -1930,12 +1930,15 @@ transform_data(data_dy, data_in, overwrite=TRUE)</code></pre>
 <ul>
 <li>function goes throug each <code>id</code> and a corresponding <code>days_in</code> var</li>
 <li>checks per id if the corresponding days_in var has consecutive variables</li>
-<li>each entry that has one “one-lower” match is flagged and all corresponding values from another set of <code>variables</code> are extracted</li>
-<li>The new variables get the <code>prefix</code> “N”</li>
+<li>If <code>next_day = TRUE</code>, each entry that has one “one-lower” match is flagged and all corresponding values from another set of <code>variables</code> are extracted, if <code>next_day = FALSE</code>, it searches for the value on the previous day</li>
+<li>The new variables get the <code>prefix</code> “N” for next day and “P” for previous day.</li>
 </ul>
 <pre class="r"><code>library(padis)
 data &lt;- next_day_data
-next_day(data)</code></pre>
+
+#returns next day
+other_day(data, next_day=TRUE)</code></pre>
+<pre><code>## Prefix was set automatically to N. You can overwrite this using the 'prefix' argument.</code></pre>
 <pre><code>##    PAR.ID Day.Num Day.DaysIn Day.Wellbeing Day.Closeness NDay.Wellbeing
 ## 1       1       1          1             3             1             NA
 ## 2       1       2          2             4             2              3
@@ -2048,6 +2051,121 @@ next_day(data)</code></pre>
 ## 53             NA
 ## 54              4
 ## 55              7</code></pre>
+<pre class="r"><code>#returns previous day
+other_day(data)</code></pre>
+<pre><code>## Prefix was set automatically to P. You can overwrite this using the 'prefix' argument.</code></pre>
+<pre><code>##    PAR.ID Day.Num Day.DaysIn Day.Wellbeing Day.Closeness PDay.Wellbeing
+## 1       1       1          1             3             1              4
+## 2       1       2          2             4             2              2
+## 3       1       3          3             2             6              7
+## 4       1       4          4             7             4              6
+## 5       1       5          5             6             7              5
+## 6       1       6          6             5             3             NA
+## 7       2       1          1             3             1              4
+## 8       2       2          2             4             2             NA
+## 9       2       3          4             2             6              7
+## 10      2       4          5             7             4              6
+## 11      2       5          6             6             7              5
+## 12      2       6          7             5             3             NA
+## 13      3       1          1             3             1             NA
+## 14      3       2          3             4             2              2
+## 15      3       3          4             2             6             NA
+## 16      3       4          7             7             4              6
+## 17      3       5          8             6             7              5
+## 18      3       6          9             5             3             NA
+## 19      4       1          1             3             1             NA
+## 20      4       2          7             4             2              2
+## 21      4       3          8             2             6              7
+## 22      4       4          9             7             4             NA
+## 23      4       5         13             6             7              5
+## 24      4       6         14             5             3             NA
+## 25      5       1         NA             3             1             NA
+## 26      5       2         NA             3             1             NA
+## 27      5       3         NA             2             6             NA
+## 28      5       4         NA             7             4             NA
+## 29      5       5         NA             6             7             NA
+## 30      5       6         NA             5             3             NA
+## 31      6       1         NA             3             1             NA
+## 32      6       2         NA             3             1             NA
+## 33      6       3         NA             2             6             NA
+## 34      6       4         NA             7             4             NA
+## 35      6       5         NA             6             7             NA
+## 36      6       6         NA             5             3             NA
+## 37      7       1          1             3             1              4
+## 38      7       2          2             4             2             NA
+## 39      7       3         NA             2             6             NA
+## 40      7       4          4            NA            NA              6
+## 41      7       5          5             6             7              5
+## 42      7       6          6             5             3             NA
+## 43      8       1          2             3             1             NA
+## 44      9       1          4             3             1             NA
+## 45      9       2          6             4             2             NA
+## 46      9       3          8             2             6             NA
+## 47      9       4         10             7             4             NA
+## 48      9       5         12             6             7             NA
+## 49      9       6         14             5             3             NA
+## 50     10       1          1             3             1              4
+## 51     10       2          2             4             2             NA
+## 52     10       3         NA             2             6             NA
+## 53     10       4          4             7             4              6
+## 54     10       5          5             6             7              5
+## 55     10       6          6             5             3             NA
+##    PDay.Closeness
+## 1               2
+## 2               6
+## 3               4
+## 4               7
+## 5               3
+## 6              NA
+## 7               2
+## 8              NA
+## 9               4
+## 10              7
+## 11              3
+## 12             NA
+## 13             NA
+## 14              6
+## 15             NA
+## 16              7
+## 17              3
+## 18             NA
+## 19             NA
+## 20              6
+## 21              4
+## 22             NA
+## 23              3
+## 24             NA
+## 25             NA
+## 26             NA
+## 27             NA
+## 28             NA
+## 29             NA
+## 30             NA
+## 31             NA
+## 32             NA
+## 33             NA
+## 34             NA
+## 35             NA
+## 36             NA
+## 37              2
+## 38             NA
+## 39             NA
+## 40              7
+## 41              3
+## 42             NA
+## 43             NA
+## 44             NA
+## 45             NA
+## 46             NA
+## 47             NA
+## 48             NA
+## 49             NA
+## 50              2
+## 51             NA
+## 52             NA
+## 53              7
+## 54              3
+## 55             NA</code></pre>
 </div>
 <div id="real_imagined" class="section level3">
 <h3><span class="header-section-number">3.1.4</span> real_imagined</h3>
@@ -2060,9 +2178,11 @@ next_day(data)</code></pre>
 <pre class="r"><code>library(padis)
 real_imagined(real_imagined_data, ignore_double=TRUE)</code></pre>
 <pre><code>## Warning in combine_i_r(., data, ignore_double = ignore_double): The item-pair PSP1.Sought (-.i and -.r) contains rows where both variables have non-missing values. 
-##  You can set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable. Nevertheless, please check.</code></pre>
+## 
+##                                              The function proceeded because you set 'ignore_double' to TRUE, which will set NA for these pairs in the .c variable. Nevertheless, please check.</code></pre>
 <pre><code>## Warning in combine_i_r(., data, ignore_double = ignore_double): The item-pair PSP2.Sought (-.i and -.r) contains rows where both variables have non-missing values. 
-##  You can set 'ignore_double' to TRUE to proceed, which will set NA for these pairs in the .c variable. Nevertheless, please check.</code></pre>
+## 
+##                                              The function proceeded because you set 'ignore_double' to TRUE, which will set NA for these pairs in the .c variable. Nevertheless, please check.</code></pre>
 <pre><code>##   PAR.ID PSP1.Sought.r PSP1.Comfort.r PSP1.Access.r PSP1.Effect.r
 ## 1      1             1              4             2             5
 ## 2      2             0             NA            NA            NA
@@ -2415,46 +2535,46 @@ subset(ssd.agg.slct, Issue.UniqueID == 111805)</code></pre>
 purrr::map(data_list, head)</code></pre>
 <pre><code>## [[1]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a     11   20     17
-## 2      a     12   20     17
-## 3      b     12   12     22
-## 4      c     13    2     27
-## 5      d     14   18     31
-## 6      e     15    3     39
+## 1      a     11   30      3
+## 2      a     12   30      3
+## 3      b     12    1     31
+## 4      c     13   33     11
+## 5      d     14   39     30
+## 6      e     15    7     40
 ## 
 ## [[2]]
 ##   PAR.ID var2.x var1 var2.y
-## 1      a     11   17      2
-## 2      a     12   17      2
-## 3      b     12   28     22
-## 4      c     13   16      7
-## 5      d     14    1     23
-## 6      e     15   33      9</code></pre>
+## 1      a     11   10      8
+## 2      a     12   10      8
+## 3      b     12    8     31
+## 4      c     13   25     40
+## 5      d     14   12     22
+## 6      e     15   22     20</code></pre>
 <pre class="r"><code>## get the head of each data frame in the list object list
 purrr::map(data_list, psych::describe)</code></pre>
 <pre><code>## [[1]]
 ##         vars  n  mean    sd median trimmed   mad min max range  skew
 ## PAR.ID*    1 11  5.09  3.18      5    5.00  4.45   1  10     9  0.09
 ## var2.x     2 11 15.18  3.06     15   15.11  4.45  11  20     9  0.15
-## var1       3 11 19.64 11.32     20   19.56 10.38   2  38    36 -0.02
-## var2.y     4 11 21.18 12.13     22   21.33 13.34   2  39    37 -0.10
+## var1       3 11 22.64 14.16     30   23.22 11.86   1  39    38 -0.40
+## var2.y     4 11 18.91 13.77     16   18.33 19.27   3  40    37  0.20
 ##         kurtosis   se
 ## PAR.ID*    -1.60 0.96
 ## var2.x     -1.59 0.92
-## var1       -1.07 3.41
-## var2.y     -1.31 3.66
+## var1       -1.61 4.27
+## var2.y     -1.75 4.15
 ## 
 ## [[2]]
 ##         vars  n  mean    sd median trimmed   mad min max range skew
 ## PAR.ID*    1 11  5.09  3.18      5    5.00  4.45   1  10     9 0.09
 ## var2.x     2 11 15.18  3.06     15   15.11  4.45  11  20     9 0.15
-## var1       3 11 16.18 11.90     16   15.56 13.34   1  37    36 0.48
-## var2.y     4 11 16.45 12.13     15   15.44 11.86   2  40    38 0.40
+## var1       3 11 14.73  8.82     11   13.89  7.41   5  32    27 0.62
+## var2.y     4 11 17.36 12.72     15   16.56 10.38   2  40    38 0.39
 ##         kurtosis   se
 ## PAR.ID*    -1.60 0.96
 ## var2.x     -1.59 0.92
-## var1       -1.32 3.59
-## var2.y     -1.16 3.66</code></pre>
+## var1       -1.16 2.66
+## var2.y     -1.40 3.84</code></pre>
 <pre class="r"><code>## or make your own function
 purrr::map(data_list, function(x) {x + 1}) # in this case add one two each variable. If the variable is not numerical, then there is a Warning (and in this case, Missings arise)</code></pre>
 <pre><code>## Warning in Ops.factor(left, right): '+' not meaningful for factors
@@ -2462,31 +2582,31 @@ purrr::map(data_list, function(x) {x + 1}) # in this case add one two each varia
 ## Warning in Ops.factor(left, right): '+' not meaningful for factors</code></pre>
 <pre><code>## [[1]]
 ##    PAR.ID var2.x var1 var2.y
-## 1      NA     12   21     18
-## 2      NA     13   21     18
-## 3      NA     13   13     23
-## 4      NA     14    3     28
-## 5      NA     15   19     32
-## 6      NA     16    4     40
-## 7      NA     17   20     38
-## 8      NA     18   28      3
-## 9      NA     19   39     25
-## 10     NA     20   23      5
-## 11     NA     21   36     14
+## 1      NA     12   31      4
+## 2      NA     13   31      4
+## 3      NA     13    2     32
+## 4      NA     14   34     12
+## 5      NA     15   40     31
+## 6      NA     16    8     41
+## 7      NA     17   16      7
+## 8      NA     18    3      9
+## 9      NA     19   39     17
+## 10     NA     20   23     25
+## 11     NA     21   33     37
 ## 
 ## [[2]]
 ##    PAR.ID var2.x var1 var2.y
-## 1      NA     12   18      3
-## 2      NA     13   18      3
-## 3      NA     13   29     23
-## 4      NA     14   17      8
-## 5      NA     15    2     24
-## 6      NA     16   34     10
-## 7      NA     17   10     16
-## 8      NA     18    8     26
-## 9      NA     19   38     29
-## 10     NA     20    9     41
-## 11     NA     21    6      9</code></pre>
+## 1      NA     12   11      9
+## 2      NA     13   11      9
+## 3      NA     13    9     32
+## 4      NA     14   26     41
+## 5      NA     15   13     23
+## 6      NA     16   23     21
+## 7      NA     17   12     11
+## 8      NA     18   33      4
+## 9      NA     19    6      3
+## 10     NA     20    7     16
+## 11     NA     21   22     33</code></pre>
 </div>
 <div id="example-regex" class="section level3">
 <h3><span class="header-section-number">3.2.5</span> Example regex</h3>

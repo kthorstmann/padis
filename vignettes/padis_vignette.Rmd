@@ -335,15 +335,20 @@ transform_data(data_dy, data_in, overwrite=TRUE)
 
 - function goes throug each `id` and a corresponding `days_in` var
 - checks per id if the corresponding days_in var has consecutive variables
-- each entry that has one "one-lower" match is flagged and all corresponding values from another set of `variables` are extracted
-- The new variables get the `prefix` "N"
+- If `next_day = TRUE`, each entry that has one "one-lower" match is flagged and all corresponding values from another set of `variables` are extracted, if `next_day = FALSE`, it searches for the value on the previous day
+- The new variables get the `prefix` "N" for next day and "P" for previous day.
 
 ```{r}
 
 
 library(padis)
 data <- next_day_data
-next_day(data)
+
+#returns next day
+other_day(data, next_day=TRUE)
+
+#returns previous day
+other_day(data)
 
 ```
 
