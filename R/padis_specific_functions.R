@@ -6,7 +6,7 @@
 #'
 #' This function matches two items from a data frame \code{data} by looking for their common stem (\code{var_stem}), and the pattern at the end that makes each variable name unique (\code{end_pattern}). The function is mainly used in \code{\link[padis]{imaginer}}.
 #'
-#' @param data The data frame in which the variables should be found
+#' @param data The data frame in which the variables should be stored
 #' @param var_stem The stem of the items, i.e. what both item-names share
 #' @param end_pattern The pattern at the end of the variable that makes both variables unique
 #'
